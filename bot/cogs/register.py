@@ -15,7 +15,11 @@ class Register(commands.Cog):
 
     @commands.command()
     async def register(self, ctx: commands.Context, arg: Optional[int]):
-        """The command for registering to the bot"""
+        """
+        The command for registering to the bot
+
+        This command allows Twitch users to register their accounts with the bot.
+        """
 
         twitch_nick = os.getenv('TWITCH_NICK')
 
