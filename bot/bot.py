@@ -7,7 +7,9 @@ from data import data
 
 class LuminBot(commands.Bot):
 
-    cogs = ["global_rank",
+    cogs = ["feature_toggle",
+
+            "global_rank",
             "valorant",
             "osu",
             "register",
