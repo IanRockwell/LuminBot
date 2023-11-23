@@ -2,7 +2,6 @@
 
 # Lumin - Simple chat integration with games
 
-
 Lumin is a Twitch bot that allows for chat integration for a variety of games.
 
 </div>
@@ -19,7 +18,9 @@ Lumin is a Twitch bot that allows for chat integration for a variety of games.
 
 Library requirements can be installed with:
 
-`pip install -r requirements.txt`
+```
+pip install -r requirements.txt
+```
 
 ### Environment Variables
 
@@ -35,4 +36,29 @@ TWITCH_CLIENTSECRET=
 
 # Do you want people to be able to add your bot to their channel with !register
 BOT_PUBLIC=true
+```
+
+## Contributing 🚀
+
+We welcome contributions to enhance Lumin and make it even more powerful! To contribute, follow these steps:
+
+1. Clone the repository:
+
+```
+git clone placeholder.link
+```
+
+2. Make your changes in the local repository.
+
+3. Add, commit, and push your changes:
+
+```
+git add .
+git commit -m "Description of your changes"
+git push
+```
+
+4. Create a pull request on the [Lumin GitHub repository](placeholder.link) to submit your changes.
+
+Thank you for your contribution! 🎉
 ```
