@@ -43,6 +43,7 @@ class Register(commands.Cog):
             return
 
         linked_channels["accounts"].append(str(ctx.author.id))
+        data.update_data("linked_accounts", linked_channels)
 
         await ctx.reply(f"You have successfully added {twitch_nick} to your stream!")
 
