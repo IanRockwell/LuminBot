@@ -38,6 +38,13 @@ TWITCH_CLIENTSECRET=
 BOT_PUBLIC=true
 ```
 
+### Run!
+
+The bot can then be run with the command:
+```
+python main.py
+```
+
 ## Contributing 🚀
 
 We welcome contributions to enhance Lumin and make it even more powerful! To contribute, follow these steps:
