@@ -10,7 +10,8 @@ class LuminBot(commands.Bot):
     cogs = ["global_rank",
             "valorant",
             "osu",
-            "register"]
+            "register",
+            "wiki"]
 
     def __init__(self, nick, token, client_id, client_secret):
 
