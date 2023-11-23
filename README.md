@@ -10,6 +10,15 @@ Lumin is a Twitch bot that allows for chat integration for a variety of games.
 
 ### [To register simply type !register in the bot's chat!](https://www.twitch.tv/LuminBotTV)
 
+# Supported Games 🎮
+
+Lumin currently supports chat integration for the following games:
+
+- Valorant
+- osu! (coming soon)
+
+with many more being planned.
+
 ## Setup 📦
 
 ### Requirements
