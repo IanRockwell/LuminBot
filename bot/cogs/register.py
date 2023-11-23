@@ -21,6 +21,9 @@ class Register(commands.Cog):
         This command allows Twitch users to register their accounts with the bot.
         """
 
+        if os.getenv('BOT_PUBLIC') != "true":
+            return
+
         twitch_nick = os.getenv('TWITCH_NICK')
 
         if ctx.channel.name.lower() != twitch_nick.lower():

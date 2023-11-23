@@ -21,4 +21,18 @@ Library requirements can be installed with:
 
 `pip install -r requirements.txt`
 
-Make sure you have added and configured your
+### Environment Variables
+
+Make sure you have added and configured your `.env` file
+
+```
+# Twitch Authorization
+TWITCH_NICK=LuminBotTV # your bot's username
+
+TWITCH_TOKEN=
+TWITCH_CLIENTID=
+TWITCH_CLIENTSECRET=
+
+# Do you want people to be able to add your bot to their channel with !register
+BOT_PUBLIC=true
+```
