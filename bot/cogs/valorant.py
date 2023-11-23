@@ -189,7 +189,7 @@ class Valorant(commands.Cog):
 
         await ctx.reply(f"{await get_radiant_rr(region)}RR is the current radiant threshold.")
 
-    @routines.routine(seconds=5)
+    @routines.routine(seconds=60)
     async def win_loss_notifications(self):
         """
         Routine for checking win/loss notifications in connected channels.
