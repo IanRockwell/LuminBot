@@ -45,7 +45,7 @@ We welcome contributions to enhance Lumin and make it even more powerful! To con
 1. Clone the repository:
 
 ```
-git clone placeholder.link
+git clone https://github.com/IanRockwell/LuminBot.git
 ```
 
 2. Make your changes in the local repository.
@@ -58,7 +58,6 @@ git commit -m "Description of your changes"
 git push
 ```
 
-4. Create a pull request on the [Lumin GitHub repository](placeholder.link) to submit your changes.
+4. Create a pull request on the [Lumin GitHub repository](https://github.com/IanRockwell/LuminBot/pulls) to submit your changes.
 
 Thank you for your contribution! 🎉
-```
