@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-TWITCH_CLIENTID = os.getenv("TWITCH_API_CLIENT_ID")
+TWITCH_CLIENTID = os.getenv("TWITCH_CLIENTID")
 TWITCH_TOKEN = os.getenv("TWITCH_TOKEN")
 
 def get_name_from_id(user_id):
