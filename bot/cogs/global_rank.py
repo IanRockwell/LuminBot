@@ -12,6 +12,7 @@ class GlobalRank(commands.Cog):
         self.bot = bot
 
     @commands.command(aliases=["rr", "elo"])
+    @commands.cooldown(rate=1, per=10, bucket=commands.Bucket.channel)
     async def rank(self, ctx: commands.Context, *, arg: Optional[str] = None):
         """Command for viewing all game ranks."""
 

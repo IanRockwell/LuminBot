@@ -58,7 +58,7 @@ class LuminBot(commands.Bot):
         print(f" + Channels: {formatted_channel_names}")
 
     async def event_command_error(self, ctx, error):
-        if isinstance(error, commands.CommandNotFound):
+        if isinstance(error, commands.CommandNotFound) or isinstance(error, commands.CommandOnCooldown):
             pass  # Ignore CommandNotFound errors
         else:
             # Print other errors
