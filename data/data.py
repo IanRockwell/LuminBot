@@ -141,20 +141,32 @@ def get_documents_with_key(search_key):
     # Fetch all rows from the cursor
     rows = c.fetchall()
 
-    # Create a list to store document IDs that contain the specified key
-    documents_with_key = []
+    # Create a list to store tuples of document_id and the corresponding JSON value for sorting
+    sortable_list = []
 
     for row in rows:
         document_id, data = row
         # Load JSON data
         json_data = json.loads(data)
 
-        # Check if the search_key exists in the JSON data
-        if search_key in json_data:
-            documents_with_key.append(document_id)
+        # Check if the sort_key exists in the nested structure of JSON data
+        nested_keys = search_key.split('.')
+        current_value = json_data
+
+        for nested_key in nested_keys:
+            if nested_key in current_value:
+                current_value = current_value[nested_key]
+            else:
+                current_value = None
+                break
+
+        if current_value is not None:
+            sortable_list.append((document_id, current_value))
+
+    list_of_ids = [item[0] for item in sortable_list]
 
     conn.close()
-    return documents_with_key
+    return list_of_ids
 
 
 if not os.path.exists(DB_FILE):
