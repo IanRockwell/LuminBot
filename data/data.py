@@ -112,8 +112,8 @@ def get_sorted_document_ids(sort_key):
         if current_value is not None:
             sortable_list.append((document_id, current_value))
 
-    # Sort the list based on the specified nested JSON value
-    sortable_list.sort(key=lambda x: x[1])
+    # Sort the list based on the specified nested JSON value in descending order
+    sortable_list.sort(key=lambda x: x[1], reverse=True)
 
     # Extract and return the sorted document IDs
     sorted_document_ids = [item[0] for item in sortable_list]
