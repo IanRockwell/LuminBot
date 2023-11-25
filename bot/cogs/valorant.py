@@ -295,7 +295,7 @@ class Valorant(commands.Cog):
                 message_header = f"PartyHat {stream.user.name} gained {rr_difference}RR on {map} | "
                 message_footer = "PartyHat"
 
-            message_body = f"Score: {score} | KDA: {kills}/{deaths}/{assists} | Agent: {agent} | Abilties: {e_cast_name} {e_casts} times, {q_cast_name} {q_casts} times, {c_cast_name} {c_casts} times, {x_cast_name} {x_casts} times | Headshot: {headshot_percentage}% | Tracker: https://tracker.gg/valorant/match/%{latest_match_id} "
+            message_body = f"Score: {score} | KDA: {kills}/{deaths}/{assists} | Agent: {agent} | Abilties: {e_cast_name} {e_casts} times, {q_cast_name} {q_casts} times, {c_cast_name} {c_casts} times, {x_cast_name} {x_casts} times | Headshot: {headshot_percentage}% | Tracker: https://tracker.gg/valorant/match/{latest_match_id} "
 
             await self.bot.get_channel(stream.user.name).send(message_header + message_body + message_footer)
 
