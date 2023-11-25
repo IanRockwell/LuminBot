@@ -15,6 +15,7 @@ class Watchstreak(commands.Cog):
 
     @commands.command(aliases=["watchstreaks",
                                "ws"])
+    @commands.cooldown(rate=1, per=10, bucket=commands.Bucket.channel)
     async def watchstreak(self, ctx: commands.Context, *, arg: Optional[str] = None):
         """Command for configuring the linked osu account."""
 
@@ -27,15 +28,41 @@ class Watchstreak(commands.Cog):
         except (KeyError, ValueError):
             pass
 
-        user_id = ctx.author.id
-        user_data = data.get_data(user_id)
+        if arg is None:
 
-        try:
-            watchstreak = user_data[f"streamer-{channel_id}"]["watchstreak"]
-        except (KeyError, ValueError):
-            watchstreak = "None"
+            user_id = ctx.author.id
+            user_data = data.get_data(user_id)
 
-        await ctx.reply(f"PartyHat Your current watchstreak is: {watchstreak}")
+            try:
+                watchstreak = user_data[f"streamer-{channel_id}"]["watchstreak"]
+            except (KeyError, ValueError):
+                watchstreak = "None"
+
+            await ctx.reply(f"PartyHat Your current watchstreak is: {watchstreak}")
+            return
+
+        arg = arg.replace(" 󠀀", "") # why oh why are there invisible characters in my twitch messages
+
+        if arg == "top":
+
+            leaderboard = "PogChamp Top Active Watchstreaks: "
+
+            sorted_documents = data.get_sorted_document_ids(f"streamer-{channel_id}.watchstreak")
+
+            for index, document_id in enumerate(sorted_documents):
+
+                if index >= 10:
+                    break
+
+                document = data.get_data(document_id)
+                document_watchstreak = document[f"streamer-{channel_id}"]["watchstreak"]
+                document_user = ids.get_name_from_id(document_id)
+
+                leaderboard = leaderboard + f"{index + 1}. {document_user} ({document_watchstreak}), "
+
+            await ctx.reply(leaderboard + "PogChamp")
+            return
+
 
     @commands.Cog.event()
     async def event_message(self, message):
@@ -57,14 +84,13 @@ class Watchstreak(commands.Cog):
         except AttributeError:
             return
 
-        user_data = data.get_data(user_id)
-
         stream = await self.bot.fetch_streams(user_logins=[message.channel.name], type="live")
 
         if not stream:
             return
 
         # Update data for the stream
+        channel_data.setdefault("watchstreaks", {})
         current_stream = channel_data["watchstreaks"].get("current_stream")
         last_stream = channel_data["watchstreaks"].get("last_stream")
 
@@ -77,8 +103,25 @@ class Watchstreak(commands.Cog):
 
             data.update_data(document_id=channel_id, new_data=channel_data)
 
+            all_watchstreak_documents = data.get_documents_with_key(f"streamer-{channel_id}.watchstreak")
+            print("watchstreak documents:")
+            print(all_watchstreak_documents)
+
+            for document_id in all_watchstreak_documents:
+                document = data.get_data(document_id)
+
+                print(document_id)
+                print(document)
+                print([last_stream, current_stream])
+
+                if document[f"streamer-{channel_id}"]["latest_stream"] not in [last_stream, current_stream]:
+                    del document[f"streamer-{channel_id}"]["watchstreak"]
+                    data.update_data(document_id, document)
+
         # Update data for the user
         time.sleep(0.1)
+
+        user_data = data.get_data(user_id)
 
         try:
             user_latest_stream = user_data[f"streamer-{channel_id}"]["latest_stream"]
