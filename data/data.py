@@ -156,6 +156,7 @@ def get_documents_with_key(search_key):
     conn.close()
     return documents_with_key
 
+
 if not os.path.exists(DB_FILE):
     create_table()
 else:
