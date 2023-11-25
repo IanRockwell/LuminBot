@@ -5,7 +5,7 @@ import requests
 from twitchio.ext import commands
 from twitchio.ext import routines
 
-from bot.utilities import ids
+from bot.utilities import ids, add_mention
 from data import data
 
 
@@ -120,6 +120,8 @@ class Valorant(commands.Cog):
             !record
         """
 
+        mention = add_mention.process_mention(arg)
+
         channel_id = ids.get_id_from_name(ctx.channel.name)
         channel_data = data.get_data(channel_id)
 
@@ -168,7 +170,7 @@ class Valorant(commands.Cog):
         else:
             difference_tag = "up"
 
-        await ctx.reply(f"{name} is currently {difference_tag} {difference}RR with {win} wins and {loss} losses in the last 12 hours")
+        await ctx.reply(f"{mention}{name} is currently {difference_tag} {difference}RR with {win} wins and {loss} losses in the last 12 hours")
 
     @commands.command()
     @commands.cooldown(rate=1, per=10, bucket=commands.Bucket.channel)
@@ -183,6 +185,8 @@ class Valorant(commands.Cog):
         Usage:
             !radiant
         """
+
+        mention = add_mention.process_mention(arg)
 
         channel_id = ids.get_id_from_name(ctx.channel.name)
         channel_data = data.get_data(channel_id)
@@ -201,13 +205,14 @@ class Valorant(commands.Cog):
         except (KeyError, ValueError):
             return
 
-        await ctx.reply(f"{await get_radiant_rr(region)}RR is the current radiant threshold.")
+        await ctx.reply(f"{mention}{await get_radiant_rr(region)}RR is the current radiant threshold.")
 
     @routines.routine(seconds=60)
     async def win_loss_notifications(self):
         """
         Routine for checking win/loss notifications in connected channels.
         """
+
         connected_channels = self.bot.connected_channels
 
         if not connected_channels:

@@ -3,7 +3,7 @@ from typing import Optional
 
 from bot.cogs import valorant
 
-from bot.utilities import ids
+from bot.utilities import ids, add_mention
 from data import data
 
 class GlobalRank(commands.Cog):
@@ -15,6 +15,8 @@ class GlobalRank(commands.Cog):
     @commands.cooldown(rate=1, per=10, bucket=commands.Bucket.channel)
     async def rank(self, ctx: commands.Context, *, arg: Optional[str] = None):
         """Command for viewing all game ranks."""
+
+        mention = add_mention.process_mention(arg)
 
         channel_id = ids.get_id_from_name(ctx.channel.name)
         channel_data = data.get_data(channel_id)
@@ -40,7 +42,7 @@ class GlobalRank(commands.Cog):
             await ctx.reply("No linked accounts. To link accounts see !commands.")
             return
 
-        await ctx.reply(result)
+        await ctx.reply(mention + result)
 
     """
     @commands.Cog.event()
