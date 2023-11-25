@@ -104,15 +104,9 @@ class Watchstreak(commands.Cog):
             data.update_data(document_id=channel_id, new_data=channel_data)
 
             all_watchstreak_documents = data.get_documents_with_key(f"streamer-{channel_id}.watchstreak")
-            print("watchstreak documents:")
-            print(all_watchstreak_documents)
 
             for document_id in all_watchstreak_documents:
                 document = data.get_data(document_id)
-
-                print(document_id)
-                print(document)
-                print([last_stream, current_stream])
 
                 if document[f"streamer-{channel_id}"]["latest_stream"] not in [last_stream, current_stream]:
                     del document[f"streamer-{channel_id}"]["watchstreak"]
