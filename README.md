@@ -48,11 +48,16 @@ Make sure you have added and configured your `.env` file
 
 ```
 # Twitch Authorization
-TWITCH_NICK=LuminBotTV # your bot's username
+TWITCH_NICK=LuminBotTV
 
 TWITCH_TOKEN=
 TWITCH_CLIENTID=
 TWITCH_CLIENTSECRET=
+
+# Osu Authorization
+# Can be left blank if not needed, but osu.py will stop functioning
+PP_ADDICT_APIKEY=
+OSU_V1_APIKEY=
 
 # Do you want people to be able to add your bot to their channel with !register
 BOT_PUBLIC=true
