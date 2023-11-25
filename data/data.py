@@ -71,6 +71,57 @@ def delete_data(document_id):
     conn.commit()
     conn.close()
 
+def get_sorted_document_ids(sort_key):
+    """
+    Get a sorted list of document IDs based on a specified nested JSON value.
+
+    Args:
+        sort_key (str): The nested key within the JSON data to be used for sorting.
+
+    Returns:
+        list: A sorted list of document IDs.
+    """
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+
+    # Select document_id and data columns from the 'documents' table
+    c.execute('SELECT document_id, data FROM documents')
+
+    # Fetch all rows from the cursor
+    rows = c.fetchall()
+
+    # Create a list to store tuples of document_id and the corresponding JSON value for sorting
+    sortable_list = []
+
+    for row in rows:
+        document_id, data = row
+        # Load JSON data
+        json_data = json.loads(data)
+
+        # Check if the sort_key exists in the nested structure of JSON data
+        nested_keys = sort_key.split('.')
+        current_value = json_data
+
+        for nested_key in nested_keys:
+            if nested_key in current_value:
+                current_value = current_value[nested_key]
+            else:
+                current_value = None
+                break
+
+        if current_value is not None:
+            sortable_list.append((document_id, current_value))
+
+    # Sort the list based on the specified nested JSON value
+    sortable_list.sort(key=lambda x: x[1])
+
+    # Extract and return the sorted document IDs
+    sorted_document_ids = [item[0] for item in sortable_list]
+
+    conn.close()
+    return sorted_document_ids
+
+
 if not os.path.exists(DB_FILE):
     create_table()
 else:
