@@ -1,6 +1,6 @@
 <div align="center">
 
-# Lumin - Simple chat integration with games
+# Lumin - Chat interaction enhancer
 
 Lumin is a Twitch bot that allows for chat integration for a variety of games.
 
