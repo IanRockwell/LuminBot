@@ -123,8 +123,11 @@ class Valorant(commands.Cog):
         channel_id = ids.get_id_from_name(ctx.channel.name)
         channel_data = data.get_data(channel_id)
 
-        if "record" in channel_data["disabled_features"]:
-            return
+        try:
+            if "record" in channel_data["disabled_features"]:
+                return
+        except (KeyError, ValueError):
+            pass
 
         if not channel_data:
             return
@@ -184,8 +187,11 @@ class Valorant(commands.Cog):
         channel_id = ids.get_id_from_name(ctx.channel.name)
         channel_data = data.get_data(channel_id)
 
-        if "radiant" in channel_data["disabled_features"]:
-            return
+        try:
+            if "radiant" in channel_data["disabled_features"]:
+                return
+        except (KeyError, ValueError):
+            pass
 
         if not channel_data:
             return
@@ -219,8 +225,11 @@ class Valorant(commands.Cog):
             channel_id = ids.get_id_from_name(stream.user.name)
             channel_data = data.get_data(channel_id)
 
-            if "winlossnoti" in channel_data["disabled_features"]:
-                return
+            try:
+                if "winlossnoti" in channel_data["disabled_features"]:
+                    return
+            except (KeyError, ValueError):
+                pass
 
             if not channel_data:
                 continue

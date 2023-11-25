@@ -19,8 +19,11 @@ class GlobalRank(commands.Cog):
         channel_id = ids.get_id_from_name(ctx.channel.name)
         channel_data = data.get_data(channel_id)
 
-        if "rank" in channel_data["disabled_features"]:
-            return
+        try:
+            if "rank" in channel_data["disabled_features"]:
+                return
+        except (KeyError, ValueError):
+            pass
 
         ranks = {"VALORANT": await valorant.get_rank(ctx.channel.name)}
 
