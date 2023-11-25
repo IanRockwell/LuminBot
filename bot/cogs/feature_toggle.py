@@ -19,11 +19,13 @@ class FeatureToggle(commands.Cog):
 
         features = [
 
+                    "watchstreaks", # Entire watchstreaks feature
+
                     "rank",  # Global rank command
 
-                    "radiant",  # valorant related
-                    "record",  # valorant related
-                    "winlossnoti"  # valorant related
+                    "valorant.radiant",  # valorant related
+                    "valorant.record",  # valorant related
+                    "valorant.winlossnoti"  # valorant related
 
                     ]
 

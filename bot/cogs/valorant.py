@@ -124,7 +124,7 @@ class Valorant(commands.Cog):
         channel_data = data.get_data(channel_id)
 
         try:
-            if "record" in channel_data["disabled_features"]:
+            if "valorant.record" in channel_data["disabled_features"]:
                 return
         except (KeyError, ValueError):
             pass
@@ -188,7 +188,7 @@ class Valorant(commands.Cog):
         channel_data = data.get_data(channel_id)
 
         try:
-            if "radiant" in channel_data["disabled_features"]:
+            if "valorant.radiant" in channel_data["disabled_features"]:
                 return
         except (KeyError, ValueError):
             pass
@@ -226,7 +226,7 @@ class Valorant(commands.Cog):
             channel_data = data.get_data(channel_id)
 
             try:
-                if "winlossnoti" in channel_data["disabled_features"]:
+                if "valorant.winlossnoti" in channel_data["disabled_features"]:
                     return
             except (KeyError, ValueError):
                 pass
