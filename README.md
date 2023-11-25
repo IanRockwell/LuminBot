@@ -4,6 +4,8 @@
 
 Lumin is a Twitch bot that allows for chat integration for a variety of games.
 
+[Join the discord](https://discord.gg/UzUaUkpC6g)
+
 </div>
 
 # Register👋
