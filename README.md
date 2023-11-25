@@ -19,7 +19,7 @@ Lumin currently supports chat integration for the following games:
 
 with many more being planned.
 
-# Additional Features 🚀
+# Additional Features 📙
 
 In addition to game integration, Lumin offers a range of non-game related features to enhance your Twitch channel:
 
