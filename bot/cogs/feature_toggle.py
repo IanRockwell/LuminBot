@@ -20,6 +20,7 @@ class FeatureToggle(commands.Cog):
         features = [
 
                     "watchstreaks", # Entire watchstreaks feature
+                    "firsts", # Entire firsts feature
 
                     "rank",  # Global rank command
 
