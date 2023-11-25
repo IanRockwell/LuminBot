@@ -34,7 +34,7 @@ Feel free to explore these features and customize Lumin to create an engaging an
 
 ### Requirements
 
-- Python 3.6+
+- Python 3.9+
 
 Library requirements can be installed with:
 
