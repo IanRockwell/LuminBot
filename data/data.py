@@ -122,6 +122,40 @@ def get_sorted_document_ids(sort_key):
     return sorted_document_ids
 
 
+def get_documents_with_key(search_key):
+    """
+    Get a list of document IDs that contain a specific key within their JSON data.
+
+    Args:
+        search_key (str): The key to search for within the JSON data.
+
+    Returns:
+        list: A list of document IDs that contain the specified key.
+    """
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+
+    # Select document_id and data columns from the 'documents' table
+    c.execute('SELECT document_id, data FROM documents')
+
+    # Fetch all rows from the cursor
+    rows = c.fetchall()
+
+    # Create a list to store document IDs that contain the specified key
+    documents_with_key = []
+
+    for row in rows:
+        document_id, data = row
+        # Load JSON data
+        json_data = json.loads(data)
+
+        # Check if the search_key exists in the JSON data
+        if search_key in json_data:
+            documents_with_key.append(document_id)
+
+    conn.close()
+    return documents_with_key
+
 if not os.path.exists(DB_FILE):
     create_table()
 else:
