@@ -24,6 +24,7 @@ with many more being planned.
 In addition to game integration, Lumin offers a range of non-game related features to enhance your Twitch channel:
 
 - Watchstreaks
+- Firsts
 
 Feel free to explore these features and customize Lumin to create an engaging and interactive experience for your Twitch community!
 
