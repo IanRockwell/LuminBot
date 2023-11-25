@@ -19,6 +19,14 @@ Lumin currently supports chat integration for the following games:
 
 with many more being planned.
 
+# Additional Features 🚀
+
+In addition to game integration, Lumin offers a range of non-game related features to enhance your Twitch channel:
+
+- Watchstreaks
+
+Feel free to explore these features and customize Lumin to create an engaging and interactive experience for your Twitch community!
+
 ## Setup 📦
 
 ### Requirements
