@@ -9,6 +9,8 @@ class LuminBot(commands.Bot):
 
     cogs = ["feature_toggle",
 
+            "watchstreak",
+
             "global_rank",
             "valorant",
             "osu",
