@@ -13,7 +13,8 @@ class Watchstreak(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @commands.command(aliases=["watchstreaks"])
+    @commands.command(aliases=["watchstreaks",
+                               "ws"])
     async def watchstreak(self, ctx: commands.Context, *, arg: Optional[str] = None):
         """Command for configuring the linked osu account."""
 
@@ -29,7 +30,10 @@ class Watchstreak(commands.Cog):
         user_id = ctx.author.id
         user_data = data.get_data(user_id)
 
-        watchstreak = user_data[f"streamer-{channel_id}"]["watchstreak"]
+        try:
+            watchstreak = user_data[f"streamer-{channel_id}"]["watchstreak"]
+        except (KeyError, ValueError):
+            watchstreak = "None"
 
         await ctx.reply(f"PartyHat Your current watchstreak is: {watchstreak}")
 
@@ -84,7 +88,7 @@ class Watchstreak(commands.Cog):
             user_watchstreak = 1
 
             user_data[f"streamer-{channel_id}"] = {}
-            
+
             user_data[f"streamer-{channel_id}"]["latest_stream"] = user_latest_stream
             user_data[f"streamer-{channel_id}"]["watchstreak"] = user_watchstreak
 
