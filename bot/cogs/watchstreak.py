@@ -72,7 +72,6 @@ class Watchstreak(commands.Cog):
             await ctx.reply(leaderboard + "PogChamp")
             return
 
-
     @commands.Cog.event()
     async def event_message(self, message):
 
