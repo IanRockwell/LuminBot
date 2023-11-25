@@ -17,7 +17,16 @@ class Watchstreak(commands.Cog):
                                "ws"])
     @commands.cooldown(rate=1, per=10, bucket=commands.Bucket.channel)
     async def watchstreak(self, ctx: commands.Context, *, arg: Optional[str] = None):
-        """Command for configuring the linked osu account."""
+        """
+        Command for viewing all watchstreak related data
+
+        Parameters:
+            ctx (commands.Context): The command context.
+
+        Usage:
+            !watchstreak
+            !watchstreak top
+        """
 
         channel_id = ids.get_id_from_name(ctx.channel.name)
         channel_data = data.get_data(channel_id)
