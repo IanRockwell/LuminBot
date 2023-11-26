@@ -114,7 +114,7 @@ class Valorant(commands.Cog):
 
         Parameters:
             ctx (commands.Context): The command context.
-            arg (Optional[str]): The argument (unused).
+            arg (Optional[str]): The mentioned user.
 
         Usage:
             !record
