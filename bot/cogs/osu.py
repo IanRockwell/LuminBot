@@ -92,6 +92,47 @@ class Osu(commands.Cog):
 
         await ctx.reply("Successfully unlinked osu.")
 
+    @commands.command(aliases=["osu"])
+    @commands.cooldown(rate=1, per=10, bucket=commands.Bucket.channel)
+    async def profile(self, ctx: commands.Context, *, arg: Optional[str] = None):
+        """
+        Command for retrieving information about the linked osu account.
+
+        Parameters:
+        - ctx (commands.Context): The context of the command.
+        - arg (Optional[str]): Additional arguments for the command.
+
+        Usage:
+        !profile
+        """
+
+        channel_id = ids.get_id_from_name(ctx.channel.name)
+        channel_data = data.get_data(channel_id)
+
+        try:
+            if "osu.profile" in channel_data["disabled_features"]:
+                return
+        except (KeyError, ValueError):
+            pass
+
+        try:
+            user_id = channel_data["osu"]["user_id"]
+        except (KeyError, ValueError):
+            return
+
+        user_request = await get_user(user_id)
+
+        profile_url = f"https://osu.ppy.sh/u/{user_id}"
+        rank = user_request.json()[0]["pp_rank"]
+        username = user_request.json()[0]["username"]
+        pp = round(float(user_request.json()[0]["pp_raw"]))
+        country = user_request.json()[0]["country"]
+        country_rank = user_request.json()[0]["pp_country_rank"]
+        acc = round(float(user_request.json()[0]["accuracy"]), 2)
+
+        await ctx.reply(f"{profile_url} {username}: #{rank} (#{country_rank} {country}) {pp}PP (Profile Acc: {acc}%)")
+
+
     @commands.command()
     @commands.cooldown(rate=1, per=10, bucket=commands.Bucket.channel)
     async def map(self, ctx: commands.Context, *, arg: Optional[str] = None):

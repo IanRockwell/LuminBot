@@ -25,6 +25,7 @@ class FeatureToggle(commands.Cog):
                     "rank",  # Global rank command
 
                     "osu.map", # osu related
+                    "osu.profile", #osu related
 
                     "valorant.radiant",  # valorant related
                     "valorant.record",  # valorant related
