@@ -133,7 +133,7 @@ class Watchstreak(commands.Cog):
             user_latest_stream = user_data[f"streamer-{channel_id}"]["latest_stream"]
             user_watchstreak = user_data[f"streamer-{channel_id}"]["watchstreak"]
         except (KeyError, ValueError):
-            user_latest_stream = stream[0].id
+            user_latest_stream = current_stream
             user_watchstreak = 1
 
             user_data[f"streamer-{channel_id}"] = {}
@@ -154,7 +154,7 @@ class Watchstreak(commands.Cog):
             user_watchstreak = 1
         else:
             # If the user's last stream is the last stream, add 1 to the watchstreak
-            user_latest_stream = stream[0].id
+            user_latest_stream = current_stream
             user_watchstreak += 1
 
             if user_watchstreak % 5 == 0:
