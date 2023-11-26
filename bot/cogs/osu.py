@@ -66,7 +66,7 @@ class Osu(commands.Cog):
         channel_data = data.get_data(channel_id)
 
         try:
-            if "osu.map" in channel_data.get("disabled_features", []):
+            if "osu.map" in channel_data["disabled_features"]:
                 return
         except (KeyError, ValueError):
             pass
