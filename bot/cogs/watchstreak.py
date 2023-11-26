@@ -1,7 +1,7 @@
 from twitchio.ext import commands
 from typing import Optional
 
-from bot.utilities import ids
+from bot.utilities import ids, known_bots
 from data import data
 
 from datetime import datetime
@@ -119,6 +119,10 @@ class Watchstreak(commands.Cog):
                 if document[f"streamer-{channel_id}"]["latest_stream"] not in [last_stream, current_stream]:
                     del document[f"streamer-{channel_id}"]["watchstreak"]
                     data.update_data(document_id, document)
+
+        # If the user is in the known bots list, return
+        if message.author.name in known_bots.KNOWN_BOTS:
+            return
 
         # Update data for the user
         time.sleep(0.1)

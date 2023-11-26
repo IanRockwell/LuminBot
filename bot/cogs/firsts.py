@@ -1,7 +1,7 @@
 from twitchio.ext import commands
 from typing import Optional
 
-from bot.utilities import ids
+from bot.utilities import ids, known_bots
 from data import data
 
 from datetime import datetime
@@ -108,7 +108,10 @@ class Firsts(commands.Cog):
         channel_data["firsts"]["current_stream"] = current_stream
         data.update_data(document_id=channel_id, new_data=channel_data)
 
-        # Update data for the user
+        # If the user is in the known bots list, return
+        if message.author.name in known_bots.KNOWN_BOTS:
+            return
+
         user_data = data.get_data(user_id)
 
         try:
