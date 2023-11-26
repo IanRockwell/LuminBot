@@ -1,8 +1,10 @@
 <div align="center">
 
-# Lumin - Simple chat integration with games
+# Lumin - Chat interaction enhancer
 
 Lumin is a Twitch bot that allows for chat integration for a variety of games.
+
+[Join the discord](https://discord.gg/UzUaUkpC6g)
 
 </div>
 
@@ -32,7 +34,7 @@ Feel free to explore these features and customize Lumin to create an engaging an
 
 ### Requirements
 
-- Python 3.6+
+- Python 3.10+
 
 Library requirements can be installed with:
 
@@ -46,11 +48,16 @@ Make sure you have added and configured your `.env` file
 
 ```
 # Twitch Authorization
-TWITCH_NICK=LuminBotTV # your bot's username
+TWITCH_NICK=LuminBotTV
 
 TWITCH_TOKEN=
 TWITCH_CLIENTID=
 TWITCH_CLIENTSECRET=
+
+# Osu Authorization
+# Can be left blank if not needed, but osu.py will stop functioning
+PP_ADDICT_APIKEY=
+OSU_V1_APIKEY=
 
 # Do you want people to be able to add your bot to their channel with !register
 BOT_PUBLIC=true
