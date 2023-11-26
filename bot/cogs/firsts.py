@@ -75,6 +75,10 @@ class Firsts(commands.Cog):
     @commands.Cog.event()
     async def event_message(self, message):
 
+        # If the user is in the known bots list, return
+        if message.author.name in known_bots.KNOWN_BOTS:
+            return
+
         if message.content.startswith("!"):
             return
 
@@ -107,10 +111,6 @@ class Firsts(commands.Cog):
         current_stream = stream[0].id
         channel_data["firsts"]["current_stream"] = current_stream
         data.update_data(document_id=channel_id, new_data=channel_data)
-
-        # If the user is in the known bots list, return
-        if message.author.name in known_bots.KNOWN_BOTS:
-            return
 
         user_data = data.get_data(user_id)
 
