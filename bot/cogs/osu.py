@@ -68,6 +68,31 @@ class Osu(commands.Cog):
         print(f"[osu] {ctx.author.name} has linked {ctx.channel.name} with: {osu_profile_url}")
 
     @commands.command()
+    async def osuunset(self, ctx: commands.Context, *, arg: Optional[str] = None):
+        """
+        Command for unconfiguring the linked osu account.
+
+        Parameters:
+            ctx (commands.Context): The command context.
+            arg (Optional[str]): The argument (unused).
+
+        Usage:
+            !osuunset
+        """
+
+        if not ctx.author.is_mod and not ctx.author.is_broadcaster:
+            return
+
+        channel_id = ids.get_id_from_name(ctx.channel.name)
+        channel_data = data.get_data(channel_id)
+
+        channel_data["osu"] = {}
+
+        data.update_data(document_id=channel_id, new_data=channel_data)
+
+        await ctx.reply("Successfully unlinked osu.")
+
+    @commands.command()
     @commands.cooldown(rate=1, per=10, bucket=commands.Bucket.channel)
     async def map(self, ctx: commands.Context, *, arg: Optional[str] = None):
         """
