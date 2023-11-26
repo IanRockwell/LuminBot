@@ -125,7 +125,6 @@ class Watchstreak(commands.Cog):
             return
 
         # Update data for the user
-        time.sleep(0.1)
 
         user_data = data.get_data(user_id)
 
@@ -165,6 +164,8 @@ class Watchstreak(commands.Cog):
         user_data[f"streamer-{channel_id}"]["watchstreak"] = user_watchstreak
 
         data.update_data(message.author.id, user_data)
+
+        time.sleep(2)
 
 def prepare(bot: commands.Bot):
     bot.add_cog(Watchstreak(bot))

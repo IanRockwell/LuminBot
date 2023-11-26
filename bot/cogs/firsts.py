@@ -75,9 +75,8 @@ class Firsts(commands.Cog):
     @commands.Cog.event()
     async def event_message(self, message):
 
-        # If the user is in the known bots list, return
-        if message.author.name in known_bots.KNOWN_BOTS:
-            return
+        time.sleep(2)
+        print("firsts event happened")
 
         if message.content.startswith("!"):
             return
@@ -94,6 +93,10 @@ class Firsts(commands.Cog):
         try:
             user_id = message.author.id
         except AttributeError:
+            return
+
+        # If the user is in the known bots list, return
+        if message.author.name in known_bots.KNOWN_BOTS:
             return
 
         stream = await self.bot.fetch_streams(user_logins=[message.channel.name], type="live")
@@ -120,7 +123,13 @@ class Firsts(commands.Cog):
         except (KeyError, ValueError):
             user_firsts = 1
 
-        user_data[f"streamer-{channel_id}"]["firsts"] = user_firsts
+        try:
+            user_data[f"streamer-{channel_id}"]["firsts"] = user_firsts
+        except (KeyError):
+            user_data[f"streamer-{channel_id}"] = {}
+            user_data[f"streamer-{channel_id}"]["firsts"] = user_firsts
+
+        print(user_data)
 
         data.update_data(message.author.id, user_data)
         await self.bot.get_channel(message.channel.name).send(
