@@ -1,7 +1,7 @@
 from twitchio.ext import commands
 from typing import Optional
 
-from bot.cogs import valorant
+from bot.cogs import valorant, osu
 
 from bot.utilities import ids, add_mention
 from data import data
@@ -27,7 +27,8 @@ class GlobalRank(commands.Cog):
         except (KeyError, ValueError):
             pass
 
-        ranks = {"VALORANT": await valorant.get_rank(ctx.channel.name)}
+        ranks = {"VALORANT": await valorant.get_rank(ctx.channel.name),
+                 "osu!": await osu.get_rank(ctx.channel.name)}
 
         result = ""
 

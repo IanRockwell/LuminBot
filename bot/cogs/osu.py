@@ -109,6 +109,29 @@ class Osu(commands.Cog):
         reply_message = f"{beatmap_title} [{beatmap_diff_name}] ({beatmap_stars}) +{mods_string} https://osu.ppy.sh/b/{beatmap_id} | {pp_values_string}"
         await ctx.reply(reply_message)
 
+async def get_rank(channel_name):
+
+    channel_id = ids.get_id_from_name(channel_name)
+    channel_data = data.get_data(channel_id)
+
+    if not channel_data:
+        return None
+
+    try:
+        user_id = channel_data["osu"]["user_id"]
+    except (KeyError, ValueError):
+        return None
+
+    user_request = await get_user(user_id)
+
+    rank = user_request.json()[0]["pp_rank"]
+    pp = round(float(user_request.json()[0]["pp_raw"]))
+
+    country = user_request.json()[0]["country"]
+    country_rank = user_request.json()[0]["pp_country_rank"]
+
+    return f"Rank #{rank} (#{country_rank} {country}) {pp}PP"
+
 
 async def get_user(username):
     url = f"https://osu.ppy.sh/api/get_user"
