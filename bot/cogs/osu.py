@@ -25,7 +25,16 @@ class Osu(commands.Cog):
     @commands.command()
     @commands.cooldown(rate=1, per=10, bucket=commands.Bucket.channel)
     async def osuset(self, ctx: commands.Context, *, arg: Optional[str] = None):
-        """Command for configuring the linked osu account."""
+        """
+        Command for configuring the linked osu account.
+
+        Parameters:
+        - ctx (commands.Context): The context of the command.
+        - arg (Optional[str]): The osu username to link.
+
+        Usage:
+        !osuset <username>
+        """
 
         if not (ctx.author.is_mod or ctx.author.is_broadcaster):
             return
@@ -61,6 +70,16 @@ class Osu(commands.Cog):
     @commands.command()
     @commands.cooldown(rate=1, per=10, bucket=commands.Bucket.channel)
     async def map(self, ctx: commands.Context, *, arg: Optional[str] = None):
+        """
+        Command for retrieving information about the most recent osu map played.
+
+        Parameters:
+        - ctx (commands.Context): The context of the command.
+        - arg (Optional[str]): Additional arguments for the command.
+
+        Usage:
+        !map
+        """
 
         channel_id = ids.get_id_from_name(ctx.channel.name)
         channel_data = data.get_data(channel_id)
@@ -110,6 +129,15 @@ class Osu(commands.Cog):
         await ctx.reply(reply_message)
 
 async def get_rank(channel_name):
+    """
+    Get the osu rank information for a specific Twitch channel.
+
+    Parameters:
+    - channel_name (str): The name of the Twitch channel.
+
+    Returns:
+    str: A formatted string containing osu rank information.
+    """
 
     channel_id = ids.get_id_from_name(channel_name)
     channel_data = data.get_data(channel_id)
@@ -134,6 +162,15 @@ async def get_rank(channel_name):
 
 
 async def get_user(username):
+    """
+    Get osu user information by username.
+
+    Parameters:
+    - username (str): The osu username.
+
+    Returns:
+    requests.Response: The HTTP response containing user information.
+    """
     url = f"https://osu.ppy.sh/api/get_user"
 
     params = {
@@ -152,6 +189,15 @@ async def get_user(username):
         return None
 
 async def get_recent(user_id):
+    """
+    Get the most recent osu play information for a user.
+
+    Parameters:
+    - user_id (str): The osu user ID.
+
+    Returns:
+    requests.Response: The HTTP response containing recent play information.
+    """
     url = f"https://osu.ppy.sh/api/get_user_recent"
 
     params = {
@@ -170,6 +216,15 @@ async def get_recent(user_id):
         return None
 
 async def get_beatmap(beatmap_id):
+    """
+    Get osu beatmap information by beatmap ID.
+
+    Parameters:
+    - beatmap_id (str): The osu beatmap ID.
+
+    Returns:
+    requests.Response: The HTTP response containing beatmap information.
+    """
     url = f"https://osu.ppy.sh/api/get_beatmaps"
 
     params = {
@@ -189,6 +244,16 @@ async def get_beatmap(beatmap_id):
 
 
 async def get_pp_values(beatmap_id, mods):
+    """
+    Get osu PP values for a specific beatmap and mods.
+
+    Parameters:
+    - beatmap_id (str): The osu beatmap ID.
+    - mods (str): The osu mods.
+
+    Returns:
+    requests.Response: The HTTP response containing PP values.
+    """
     url = "https://api.tillerino.org/beatmapinfo"
 
     params = {
@@ -209,6 +274,15 @@ async def get_pp_values(beatmap_id, mods):
 
 
 def osu_mods_to_string(mods_integer):
+    """
+    Convert osu mods from integer to string representation.
+
+    Parameters:
+    - mods_integer (int): The integer representation of osu mods.
+
+    Returns:
+    str: The string representation of osu mods.
+    """
     mods = {
         0: "NoMod",# No Mod
         1: "NF",   # No Fail
