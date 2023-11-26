@@ -62,7 +62,7 @@ class LuminBot(commands.Bot):
 
     async def event_command_error(self, ctx, error):
         if isinstance(error, commands.CommandNotFound) or isinstance(error, commands.CommandOnCooldown):
-            pass  # Ignore CommandNotFound errors
+            pass  # Ignore CommandNotFound and CommandOnCooldown errors
         else:
             # Print other errors
             print(f"Ignoring exception in command: {error}")
