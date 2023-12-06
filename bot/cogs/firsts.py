@@ -47,7 +47,10 @@ class Firsts(commands.Cog):
             except (KeyError, ValueError):
                 firsts = 0
 
-            first_person = channel_data["firsts"]["first_person"]
+            try:
+                first_person = channel_data["firsts"]["first_person"]
+            except (KeyError, ValueError):
+                first_person = "None"
 
             await ctx.reply(f"PartyHat {first_person} was here first! PartyHat You have been first {firsts} times PartyHat")
             return
