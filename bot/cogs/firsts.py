@@ -24,8 +24,8 @@ class Firsts(commands.Cog):
             ctx (commands.Context): The command context.
 
         Usage:
-            !watchstreak
-            !watchstreak top
+            !first
+            !first top
         """
 
         channel_id = ids.get_id_from_name(ctx.channel.name)
