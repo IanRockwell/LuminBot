@@ -1,5 +1,5 @@
 KNOWN_BOTS = [
-    "StreamElements",
-    "StreamLabs",
-    "NightBot"
+    "streamelements",
+    "streamlabs",
+    "nightbot"
 ]
