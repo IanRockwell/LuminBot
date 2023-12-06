@@ -350,24 +350,24 @@ def osu_mods_to_string(mods_integer):
     str: The string representation of osu mods.
     """
     mods = {
-        0: "NoMod",# No Mod
-        1: "NF",   # No Fail
-        2: "EZ",   # Easy
-        4: "TD",   # Touch Device
-        8: "HD",   # Hidden
-        16: "HR",  # Hard Rock
-        32: "SD",  # Sudden Death
-        64: "DT",  # Double Time
-        128: "RX", # Relax
-        256: "HT", # Half Time
-        512: "NC", # Nightcore
-        1024: "FL",# Flashlight
-        2048: "AU",# Autoplay
-        4096: "SO",# Spun Out
-        8192: "AP",# Autopilot
-        16384: "PF",# Perfect
-        32768: "4K",# Key 4
-        65536: "5K",# Key 5
+        0: "NoMod",  # No Mod
+        1: "NF",     # No Fail
+        2: "EZ",     # Easy
+        4: "TD",     # Touch Device
+        8: "HD",     # Hidden
+        16: "HR",    # Hard Rock
+        32: "SD",    # Sudden Death
+        64: "DT",    # Double Time
+        128: "RX",   # Relax
+        256: "HT",   # Half Time
+        512: "NC",   # Nightcore
+        1024: "FL",  # Flashlight
+        2048: "AU",  # Autoplay
+        4096: "SO",  # Spun Out
+        8192: "AP",  # Autopilot
+        16384: "PF", # Perfect
+        32768: "4K", # Key 4
+        65536: "5K", # Key 5
         131072: "6K",# Key 6
         262144: "7K",# Key 7
         524288: "8K",# Key 8
@@ -387,8 +387,10 @@ def osu_mods_to_string(mods_integer):
         return "NoMod"
 
     mod_string = ""
-    for mod_value in sorted(mods.keys(), reverse=True):
+    for mod_value in sorted(mods.keys(), key=lambda x: mods[x], reverse=True):
         if mods_integer & mod_value:
+            if mods[mod_value] == "DT" and "NC" in mod_string:
+                continue  # Skip adding DT if NC is already in mod_string
             mod_string += mods[mod_value]
 
     return mod_string
