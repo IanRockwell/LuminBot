@@ -23,7 +23,7 @@ class Osu(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    @commands.cooldown(rate=1, per=10, bucket=commands.Bucket.channel)
+    @commands.cooldown(rate=1, per=5, bucket=commands.Bucket.channel)
     async def osuset(self, ctx: commands.Context, *, arg: Optional[str] = None):
         """
         Command for configuring the linked osu account.
@@ -93,7 +93,7 @@ class Osu(commands.Cog):
         await ctx.reply("Successfully unlinked osu.")
 
     @commands.command(aliases=["osu"])
-    @commands.cooldown(rate=1, per=10, bucket=commands.Bucket.channel)
+    @commands.cooldown(rate=1, per=5, bucket=commands.Bucket.channel)
     async def profile(self, ctx: commands.Context, *, arg: Optional[str] = None):
         """
         Command for retrieving information about the linked osu account.
@@ -134,7 +134,7 @@ class Osu(commands.Cog):
 
 
     @commands.command()
-    @commands.cooldown(rate=1, per=10, bucket=commands.Bucket.channel)
+    @commands.cooldown(rate=1, per=5, bucket=commands.Bucket.channel)
     async def map(self, ctx: commands.Context, *, arg: Optional[str] = None):
         """
         Command for retrieving information about the most recent osu map played.

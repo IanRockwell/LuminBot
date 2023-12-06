@@ -107,7 +107,7 @@ class Valorant(commands.Cog):
         await ctx.reply("Successfully unlinked VALORANT.")
 
     @commands.command()
-    @commands.cooldown(rate=1, per=10, bucket=commands.Bucket.channel)
+    @commands.cooldown(rate=1, per=5, bucket=commands.Bucket.channel)
     async def record(self, ctx: commands.Context, *, arg: Optional[str] = None):
         """
         Command for viewing the streamer"s win/loss this stream.
@@ -173,7 +173,7 @@ class Valorant(commands.Cog):
         await ctx.reply(f"{mention}{name} is currently {difference_tag} {difference}RR with {win} wins and {loss} losses in the last 12 hours")
 
     @commands.command()
-    @commands.cooldown(rate=1, per=10, bucket=commands.Bucket.channel)
+    @commands.cooldown(rate=1, per=5, bucket=commands.Bucket.channel)
     async def radiant(self, ctx: commands.Context, *, arg: Optional[str] = None):
         """
         Command for viewing the current radiant threshold.

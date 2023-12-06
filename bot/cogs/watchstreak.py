@@ -16,7 +16,7 @@ class Watchstreak(commands.Cog):
 
     @commands.command(aliases=["watchstreaks",
                                "ws"])
-    @commands.cooldown(rate=1, per=10, bucket=commands.Bucket.channel)
+    @commands.cooldown(rate=1, per=5, bucket=commands.Bucket.channel)
     async def watchstreak(self, ctx: commands.Context, *, arg: Optional[str] = None):
         """
         Command for viewing all watchstreak related data
@@ -48,7 +48,12 @@ class Watchstreak(commands.Cog):
             except (KeyError, ValueError):
                 watchstreak = "None"
 
-            await ctx.reply(f"PartyHat Your current watchstreak is: {watchstreak}")
+            try:
+                watchstreak_record = user_data[f"streamer_{channel_id}_watchstreaks"]["watchstreak_record"]
+            except (KeyError, ValueError):
+                watchstreak_record = "None"
+
+            await ctx.reply(f"PartyHat Your current watchstreak is: {watchstreak} (Your record is: {watchstreak_record})")
             return
 
         arg = arg.replace(" 󠀀", "")  # why oh why are there invisible characters in my twitch messages
@@ -104,7 +109,7 @@ class Watchstreak(commands.Cog):
 
         # If the firsts event is currently running, stop as it will
         # interfere with the firsts system. If you have a better way
-        # to implement this PLEASE DO. I beg
+        # to implement this I would appreciate it very much.
         if current_stream != stream[0].id:
             return
 
@@ -139,6 +144,7 @@ class Watchstreak(commands.Cog):
         try:
             user_latest_stream = user_data[f"streamer_{channel_id}_watchstreaks"]["latest_stream"]
             user_watchstreak = user_data[f"streamer_{channel_id}_watchstreaks"]["watchstreak"]
+            user_watchstreak_record = user_data[f"streamer_{channel_id}_watchstreaks"]["watchstreak_record"]
         except (KeyError, ValueError):
             user_latest_stream = current_stream
             user_watchstreak = 1
@@ -147,6 +153,11 @@ class Watchstreak(commands.Cog):
 
             user_data[f"streamer_{channel_id}_watchstreaks"]["latest_stream"] = user_latest_stream
             user_data[f"streamer_{channel_id}_watchstreaks"]["watchstreak"] = user_watchstreak
+
+            user_watchstreak_record = user_data.get(f"streamer_{channel_id}_watchstreaks", {}).get("watchstreak_record")
+
+            if user_watchstreak_record is None:
+                user_data[f"streamer_{channel_id}_watchstreaks"]["watchstreak_record"] = user_watchstreak
 
             data.update_data(message.author.id, user_data)
             return
@@ -172,6 +183,9 @@ class Watchstreak(commands.Cog):
 
         user_data[f"streamer_{channel_id}_watchstreaks"]["latest_stream"] = user_latest_stream
         user_data[f"streamer_{channel_id}_watchstreaks"]["watchstreak"] = user_watchstreak
+
+        if user_watchstreak_record < user_watchstreak:
+            user_data[f"streamer_{channel_id}_watchstreaks"]["watchstreak_record"] = user_watchstreak
 
         data.update_data(message.author.id, user_data)
 
