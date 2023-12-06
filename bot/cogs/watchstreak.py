@@ -8,6 +8,7 @@ from datetime import datetime
 
 import time
 
+
 class Watchstreak(commands.Cog):
 
     def __init__(self, bot: commands.Bot):
@@ -50,7 +51,7 @@ class Watchstreak(commands.Cog):
             await ctx.reply(f"PartyHat Your current watchstreak is: {watchstreak}")
             return
 
-        arg = arg.replace(" 󠀀", "") # why oh why are there invisible characters in my twitch messages
+        arg = arg.replace(" 󠀀", "")  # why oh why are there invisible characters in my twitch messages
 
         if arg == "top":
 
@@ -125,7 +126,8 @@ class Watchstreak(commands.Cog):
             for document_id in all_watchstreak_documents:
                 document = data.get_data(document_id)
 
-                if document[f"streamer_{channel_id}_watchstreaks"]["latest_stream"] not in [last_stream, current_stream]:
+                if document[f"streamer_{channel_id}_watchstreaks"]["latest_stream"] not in [last_stream,
+                                                                                            current_stream]:
                     del document[f"streamer_{channel_id}_watchstreaks"]["watchstreak"]
                     data.update_data(document_id, document)
 
@@ -163,13 +165,16 @@ class Watchstreak(commands.Cog):
             user_watchstreak += 1
 
             if user_watchstreak % 5 == 0:
-                await self.bot.get_channel(message.channel.name).send(f"PartyHat {message.author.name} has reached a watchstreak of {user_watchstreak}! PartyHat")
-                print(f"[watchstreak] {message.author.name} has reached a {user_watchstreak} watchstreak in {message.channel.name}'s channel")
+                await self.bot.get_channel(message.channel.name).send(
+                    f"PartyHat {message.author.name} has reached a watchstreak of {user_watchstreak}! PartyHat")
+                print(
+                    f"[watchstreak] {message.author.name} has reached a {user_watchstreak} watchstreak in {message.channel.name}'s channel")
 
         user_data[f"streamer_{channel_id}_watchstreaks"]["latest_stream"] = user_latest_stream
         user_data[f"streamer_{channel_id}_watchstreaks"]["watchstreak"] = user_watchstreak
 
         data.update_data(message.author.id, user_data)
+
 
 def prepare(bot: commands.Bot):
     bot.add_cog(Watchstreak(bot))
