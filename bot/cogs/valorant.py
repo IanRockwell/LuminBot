@@ -81,7 +81,7 @@ class Valorant(commands.Cog):
         await ctx.reply(f"Successfully linked {ctx.channel.name} with: {user}: {region}")
         print(f"[valorant] {ctx.author.name} has linked {ctx.channel.name} with: {user}: {region}")
 
-    @commands.command(aliases="valunset")
+    @commands.command(aliases=["valunset"])
     async def valorantunset(self, ctx: commands.Context, *, arg: Optional[str] = None):
         """
         Command for unconfiguring the linked valorant account.
