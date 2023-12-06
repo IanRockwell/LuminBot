@@ -20,7 +20,7 @@ class Valorant(commands.Cog):
 
         self.win_loss_notifications.start()
 
-    @commands.command()
+    @commands.command(aliases=["valset"])
     async def valorantset(self, ctx: commands.Context, *, arg: Optional[str] = None):
         """
         Command for configuring the linked valorant account.
@@ -81,7 +81,7 @@ class Valorant(commands.Cog):
         await ctx.reply(f"Successfully linked {ctx.channel.name} with: {user}: {region}")
         print(f"[valorant] {ctx.author.name} has linked {ctx.channel.name} with: {user}: {region}")
 
-    @commands.command()
+    @commands.command(aliases="valunset")
     async def valorantunset(self, ctx: commands.Context, *, arg: Optional[str] = None):
         """
         Command for unconfiguring the linked valorant account.
@@ -205,7 +205,7 @@ class Valorant(commands.Cog):
         except (KeyError, ValueError):
             return
 
-        await ctx.reply(f"{mention}{await get_radiant_rr(region)}RR is the current radiant threshold.")
+        await ctx.reply(f"{mention}{await get_radiant_rr(region)}RR is the current radiant threshold in {region.upper()}.")
 
     @routines.routine(seconds=60)
     async def win_loss_notifications(self):
