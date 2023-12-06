@@ -182,7 +182,18 @@ class Watchstreak(commands.Cog):
             user_watchstreak += 1
 
             if user_watchstreak % 5 == 0:
-                await self.bot.get_channel
+                await self.bot.get_channel(message.channel.name).send(
+                    f"PartyHat {message.author.name} has reached a watchstreak of {user_watchstreak}! PartyHat")
+                print(
+                    f"[watchstreak] {message.author.name} has reached a {user_watchstreak} watchstreak in {message.channel.name}'s channel")
+
+        user_data[f"streamer_{channel_id}_watchstreaks"]["latest_stream"] = user_latest_stream
+        user_data[f"streamer_{channel_id}_watchstreaks"]["watchstreak"] = user_watchstreak
+
+        if user_watchstreak_record < user_watchstreak:
+            user_data[f"streamer_{channel_id}_watchstreaks"]["watchstreak_record"] = user_watchstreak
+
+        data.update_data(message.author.id, user_data)
 
 
 def prepare(bot: commands.Bot):
