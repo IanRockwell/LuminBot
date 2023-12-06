@@ -47,7 +47,9 @@ class Firsts(commands.Cog):
             except (KeyError, ValueError):
                 firsts = 0
 
-            await ctx.reply(f"PartyHat You have been first: {firsts} times")
+            first_person = channel_data["firsts"]["first_person"]
+
+            await ctx.reply(f"PartyHat {first_person} was here first! PartyHat You have been first {firsts} times PartyHat")
             return
 
         arg = arg.replace(" 󠀀", "")  # why oh why are there invisible characters in my twitch messages
@@ -110,7 +112,8 @@ class Firsts(commands.Cog):
 
         current_stream = stream[0].id
         channel_data["firsts"]["current_stream"] = current_stream
-        data.update_data(document_id=channel_id, new_data=channel_data)
+        channel_data["firsts"]["first_person"] = message.author.name
+        data.update_data(channel_id, channel_data)
 
         user_data = data.get_data(user_id)
 
@@ -122,11 +125,12 @@ class Firsts(commands.Cog):
 
         try:
             user_data[f"streamer_{channel_id}_firsts"]["firsts"] = user_firsts
-        except (KeyError):
+        except (KeyError, ValueError):
             user_data[f"streamer_{channel_id}_firsts"] = {}
             user_data[f"streamer_{channel_id}_firsts"]["firsts"] = user_firsts
 
         data.update_data(message.author.id, user_data)
+
         await self.bot.get_channel(message.channel.name).send(
             f"PartyHat {message.author.name} was first and now has {user_firsts} firsts! PartyHat")
         print(
