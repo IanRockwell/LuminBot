@@ -121,14 +121,15 @@ class Osu(commands.Cog):
             return
 
         user_request = await get_user(user_id)
+        user_data = user_request.json()[0]
 
-        profile_url = f"https://osu.ppy.sh/u/{user_id}"
-        rank = user_request.json()[0]["pp_rank"]
-        username = user_request.json()[0]["username"]
-        pp = round(float(user_request.json()[0]["pp_raw"]))
-        country = user_request.json()[0]["country"]
-        country_rank = user_request.json()[0]["pp_country_rank"]
-        acc = round(float(user_request.json()[0]["accuracy"]), 2)
+        profile_url = f"https://osu.ppy.sh/u/{user_data['user_id']}"
+        rank = user_data["pp_rank"]
+        username = user_data["username"]
+        pp = round(float(user_data["pp_raw"]))
+        country = user_data["country"]
+        country_rank = user_data["pp_country_rank"]
+        acc = round(float(user_data["accuracy"]), 2)
 
         await ctx.reply(f"{profile_url} {username}: #{rank} (#{country_rank} {country}) {pp}PP (Profile Acc: {acc}%)")
 
