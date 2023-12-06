@@ -43,7 +43,7 @@ class Firsts(commands.Cog):
             user_data = data.get_data(user_id)
 
             try:
-                firsts = user_data[f"streamer-{channel_id}-firsts"]["firsts"]
+                firsts = user_data[f"streamer_{channel_id}_firsts"]["firsts"]
             except (KeyError, ValueError):
                 firsts = 0
 
@@ -56,7 +56,7 @@ class Firsts(commands.Cog):
 
             leaderboard = "PogChamp Top Firsts: "
 
-            sorted_documents = data.get_sorted_document_ids(f"streamer-{channel_id}-firsts.firsts")
+            sorted_documents = data.get_sorted_document_ids(f"streamer_{channel_id}_firsts.firsts")
 
             for index, document_id in enumerate(sorted_documents):
 
@@ -64,7 +64,7 @@ class Firsts(commands.Cog):
                     break
 
                 document = data.get_data(document_id)
-                document_firsts = document[f"streamer-{channel_id}-firsts"]["firsts"]
+                document_firsts = document[f"streamer_{channel_id}_firsts"]["firsts"]
                 document_user = ids.get_name_from_id(document_id)
 
                 leaderboard = leaderboard + f"{index + 1}. {document_user} ({document_firsts}), "
@@ -115,16 +115,16 @@ class Firsts(commands.Cog):
         user_data = data.get_data(user_id)
 
         try:
-            user_firsts = user_data[f"streamer-{channel_id}-firsts"]["firsts"]
+            user_firsts = user_data[f"streamer_{channel_id}_firsts"]["firsts"]
             user_firsts += 1
         except (KeyError, ValueError):
             user_firsts = 1
 
         try:
-            user_data[f"streamer-{channel_id}-firsts"]["firsts"] = user_firsts
+            user_data[f"streamer_{channel_id}_firsts"]["firsts"] = user_firsts
         except (KeyError):
-            user_data[f"streamer-{channel_id}-firsts"] = {}
-            user_data[f"streamer-{channel_id}-firsts"]["firsts"] = user_firsts
+            user_data[f"streamer_{channel_id}_firsts"] = {}
+            user_data[f"streamer_{channel_id}_firsts"]["firsts"] = user_firsts
 
         data.update_data(message.author.id, user_data)
         await self.bot.get_channel(message.channel.name).send(

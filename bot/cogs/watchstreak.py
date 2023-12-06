@@ -43,7 +43,7 @@ class Watchstreak(commands.Cog):
             user_data = data.get_data(user_id)
 
             try:
-                watchstreak = user_data[f"streamer-{channel_id}-watchstreaks"]["watchstreak"]
+                watchstreak = user_data[f"streamer_{channel_id}_watchstreaks"]["watchstreak"]
             except (KeyError, ValueError):
                 watchstreak = "None"
 
@@ -56,7 +56,7 @@ class Watchstreak(commands.Cog):
 
             leaderboard = "PogChamp Top Active Watchstreaks: "
 
-            sorted_documents = data.get_sorted_document_ids(f"streamer-{channel_id}-watchstreaks.watchstreak")
+            sorted_documents = data.get_sorted_document_ids(f"streamer_{channel_id}_watchstreaks.watchstreak")
 
             for index, document_id in enumerate(sorted_documents):
 
@@ -64,7 +64,7 @@ class Watchstreak(commands.Cog):
                     break
 
                 document = data.get_data(document_id)
-                document_watchstreak = document[f"streamer-{channel_id}-watchstreaks"]["watchstreak"]
+                document_watchstreak = document[f"streamer_{channel_id}_watchstreaks"]["watchstreak"]
                 document_user = ids.get_name_from_id(document_id)
 
                 leaderboard = leaderboard + f"{index + 1}. {document_user} ({document_watchstreak}), "
@@ -120,13 +120,13 @@ class Watchstreak(commands.Cog):
 
             data.update_data(document_id=channel_id, new_data=channel_data)
 
-            all_watchstreak_documents = data.get_documents_with_key(f"streamer-{channel_id}-watchstreaks.watchstreak")
+            all_watchstreak_documents = data.get_documents_with_key(f"streamer_{channel_id}_watchstreaks.watchstreak")
 
             for document_id in all_watchstreak_documents:
                 document = data.get_data(document_id)
 
-                if document[f"streamer-{channel_id}-watchstreaks"]["latest_stream"] not in [last_stream, current_stream]:
-                    del document[f"streamer-{channel_id}-watchstreaks"]["watchstreak"]
+                if document[f"streamer_{channel_id}_watchstreaks"]["latest_stream"] not in [last_stream, current_stream]:
+                    del document[f"streamer_{channel_id}_watchstreaks"]["watchstreak"]
                     data.update_data(document_id, document)
 
         if message.author.name in known_bots.KNOWN_BOTS:
@@ -135,16 +135,16 @@ class Watchstreak(commands.Cog):
         user_data = data.get_data(user_id)
 
         try:
-            user_latest_stream = user_data[f"streamer-{channel_id}-watchstreaks"]["latest_stream"]
-            user_watchstreak = user_data[f"streamer-{channel_id}-watchstreaks"]["watchstreak"]
+            user_latest_stream = user_data[f"streamer_{channel_id}_watchstreaks"]["latest_stream"]
+            user_watchstreak = user_data[f"streamer_{channel_id}_watchstreaks"]["watchstreak"]
         except (KeyError, ValueError):
             user_latest_stream = current_stream
             user_watchstreak = 1
 
-            user_data[f"streamer-{channel_id}-watchstreaks"] = {}
+            user_data[f"streamer_{channel_id}_watchstreaks"] = {}
 
-            user_data[f"streamer-{channel_id}-watchstreaks"]["latest_stream"] = user_latest_stream
-            user_data[f"streamer-{channel_id}-watchstreaks"]["watchstreak"] = user_watchstreak
+            user_data[f"streamer_{channel_id}_watchstreaks"]["latest_stream"] = user_latest_stream
+            user_data[f"streamer_{channel_id}_watchstreaks"]["watchstreak"] = user_watchstreak
 
             data.update_data(message.author.id, user_data)
             return
@@ -166,8 +166,8 @@ class Watchstreak(commands.Cog):
                 await self.bot.get_channel(message.channel.name).send(f"PartyHat {message.author.name} has reached a watchstreak of {user_watchstreak}! PartyHat")
                 print(f"[watchstreak] {message.author.name} has reached a {user_watchstreak} watchstreak in {message.channel.name}'s channel")
 
-        user_data[f"streamer-{channel_id}-watchstreaks"]["latest_stream"] = user_latest_stream
-        user_data[f"streamer-{channel_id}-watchstreaks"]["watchstreak"] = user_watchstreak
+        user_data[f"streamer_{channel_id}_watchstreaks"]["latest_stream"] = user_latest_stream
+        user_data[f"streamer_{channel_id}_watchstreaks"]["watchstreak"] = user_watchstreak
 
         data.update_data(message.author.id, user_data)
 
