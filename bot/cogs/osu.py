@@ -1,16 +1,12 @@
 from twitchio.ext import commands
 from typing import Optional
+from dotenv import load_dotenv
 
-import json
-
+import os
 import requests
 
 from bot.utilities import ids
 from data import data
-
-import os
-
-from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -18,8 +14,17 @@ PP_ADDICT_APIKEY = os.getenv("PP_ADDICT_APIKEY")
 OSU_V1_APIKEY = os.getenv("OSU_V1_APIKEY")
 
 class Osu(commands.Cog):
+    """
+    A Twitch bot cog for handling osu! related commands.
+    """
 
     def __init__(self, bot: commands.Bot):
+        """
+        Initializes the Osu cog.
+
+        Parameters:
+            bot (commands.Bot): The Twitch bot instance.
+        """
         self.bot = bot
 
     @commands.command()
@@ -29,22 +34,26 @@ class Osu(commands.Cog):
         Command for configuring the linked osu account.
 
         Parameters:
-        - ctx (commands.Context): The context of the command.
-        - arg (Optional[str]): The osu username to link.
+            ctx (commands.Context): The context of the command.
+            arg (Optional[str]): The osu username to link.
 
         Usage:
-        !osuset <username>
+            !osuset <username>
         """
 
+        # Check if the user is a mod or broadcaster
         if not (ctx.author.is_mod or ctx.author.is_broadcaster):
             return
 
+        # Check if the username argument is provided
         if arg is None:
             await ctx.reply("You must specify a user for this command. (Usage: !osuset <username>)")
             return
 
-        arg = arg.replace(" 󠀀", "")  # Remove invisible characters in Twitch messages
+        # Remove invisible characters in Twitch messages
+        arg = arg.replace(" 󠀀", "")
 
+        # Retrieve user data from osu!
         user_request = await get_user(arg)
 
         try:
@@ -53,14 +62,15 @@ class Osu(commands.Cog):
             await ctx.reply("The osu! account you specified appears to be invalid.")
             return
 
+        # Retrieve channel data
         channel_id = ids.get_id_from_name(ctx.channel.name)
         channel_data = data.get_data(channel_id)
 
         # Ensure "osu" key exists in channel_data
         channel_data.setdefault("osu", {})
 
+        # Update channel data with osu! user_id
         channel_data["osu"]["user_id"] = user_id
-
         data.update_data(channel_id, channel_data)
 
         osu_profile_url = f"https://osu.ppy.sh/users/{user_id}"
@@ -99,11 +109,11 @@ class Osu(commands.Cog):
         Command for retrieving information about the linked osu account.
 
         Parameters:
-        - ctx (commands.Context): The context of the command.
-        - arg (Optional[str]): Additional arguments for the command.
+            ctx (commands.Context): The context of the command.
+            arg (Optional[str]): Additional arguments for the command.
 
         Usage:
-        !profile
+            !profile
         """
 
         channel_id = ids.get_id_from_name(ctx.channel.name)
@@ -133,7 +143,6 @@ class Osu(commands.Cog):
 
         await ctx.reply(f"{profile_url} {username}: #{rank} (#{country_rank} {country}) {pp}PP (Profile Acc: {acc}%)")
 
-
     @commands.command()
     @commands.cooldown(rate=1, per=5, bucket=commands.Bucket.channel)
     async def map(self, ctx: commands.Context, *, arg: Optional[str] = None):
@@ -141,11 +150,11 @@ class Osu(commands.Cog):
         Command for retrieving information about the most recent osu map played.
 
         Parameters:
-        - ctx (commands.Context): The context of the command.
-        - arg (Optional[str]): Additional arguments for the command.
+            ctx (commands.Context): The context of the command.
+            arg (Optional[str]): Additional arguments for the command.
 
         Usage:
-        !map
+            !map
         """
 
         channel_id = ids.get_id_from_name(ctx.channel.name)
@@ -187,7 +196,6 @@ class Osu(commands.Cog):
             if key in accuracy_values:
                 accuracy_values[key] = round(value)
 
-        # Format and send the reply
         pp_values_string = ""
         for key, value in accuracy_values.items():
             pp_values_string += f"{round(float(key) * 100)}%: {value}PP, "

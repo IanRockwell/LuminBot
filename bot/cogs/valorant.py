@@ -10,20 +10,30 @@ from data import data
 
 
 class Valorant(commands.Cog):
+    """
+    A Twitch bot cog for handling Valorant-related commands and notifications.
+    """
 
     # This is the amount of seconds a game will last
     # until it is no longer included in the !record command
     TIME_THRESHOLD = 12 * 60 * 60
 
     def __init__(self, bot: commands.Bot):
+        """
+        Initializes the Valorant cog.
+
+        Parameters:
+            bot (commands.Bot): The Twitch bot instance.
+        """
         self.bot = bot
 
+        # Start the routine for win/loss notifications
         self.win_loss_notifications.start()
 
     @commands.command(aliases=["valset"])
     async def valorantset(self, ctx: commands.Context, *, arg: Optional[str] = None):
         """
-        Command for configuring the linked valorant account.
+        Command for configuring the linked Valorant account.
 
         Parameters:
             ctx (commands.Context): The command context.
@@ -33,19 +43,19 @@ class Valorant(commands.Cog):
             !valorantset <region> <user>
         """
 
+        # Check if the user is a mod or broadcaster
         if not ctx.author.is_mod and not ctx.author.is_broadcaster:
             return
 
-        if arg == None:
-            await ctx.reply(
-                "You must specify a valid region and user for this command. (Usage: !valorantset <region> <user>)")
+        # Check if the argument is provided
+        if arg is None:
+            await ctx.reply("You must specify a valid region and user for this command. (Usage: !valorantset <region> <user>)")
             return
 
+        # Parse the region and user from the argument
         space_index = arg.find(" ")
-
         if space_index == -1:
-            await ctx.reply(
-                f"You must specify a valid region and user for this command. (Usage: !valorantset <region> <user>)")
+            await ctx.reply("You must specify a valid region and user for this command. (Usage: !valorantset <region> <user>)")
             return
 
         region = arg[:space_index]
@@ -53,20 +63,21 @@ class Valorant(commands.Cog):
 
         regions = ["eu", "ap", "na", "kr", "latam", "br"]
 
+        # Validate the region
         if region.lower() not in regions:
-            await ctx.reply(
-                "You did not specify a valid region (EU, AP, NA, KR, Latam, BR): !valorantset <region> <name>")
+            await ctx.reply("You did not specify a valid region (EU, AP, NA, KR, Latam, BR): !valorantset <region> <name>")
             return
 
+        # Validate the user format
         if "#" not in user:
-            await ctx.reply(
-                f"You must specify a valid user type (Example: User#3183): !valorantset <region> <name>")
+            await ctx.reply("You must specify a valid user type (Example: User#3183): !valorantset <region> <name>")
             return
 
         if len(user) > 25:
             await ctx.reply("The user you have provided appears to be too long, are you sure it's correct?")
             return
 
+        # Update channel data with Valorant account information
         channel_id = ids.get_id_from_name(ctx.channel.name)
         channel_data = data.get_data(channel_id)
 
@@ -220,17 +231,20 @@ class Valorant(commands.Cog):
 
         user_logins = [channel.name for channel in connected_channels]
 
+        # Fetch live streams for connected channels
         streams = await self.bot.fetch_streams(user_logins=user_logins, type="live")
 
         for stream in streams:
-
+            # Check if the stream is playing Valorant
             if stream.game_name != "VALORANT":
                 continue
 
+            # Get channel data
             channel_id = ids.get_id_from_name(stream.user.name)
             channel_data = data.get_data(channel_id)
 
             try:
+                # Check if win/loss notifications are disabled for the channel
                 if "valorant.winlossnoti" in channel_data["disabled_features"]:
                     return
             except (KeyError, ValueError):
@@ -240,11 +254,13 @@ class Valorant(commands.Cog):
                 continue
 
             try:
+                # Get Valorant account information for the channel
                 name, discriminator = channel_data["valorant"]["account_user"].split("#")
                 region = channel_data["valorant"]["account_region"]
             except (KeyError, ValueError):
                 continue
 
+            # Retrieve career information for the Valorant account
             career = await get_career(region=region, name=name, discriminator=discriminator)
 
             if career.status_code != 200:
@@ -252,6 +268,7 @@ class Valorant(commands.Cog):
 
             career_json = career.json()
 
+            # Check if the latest match ID has been remembered
             latest_match_id = career_json["data"][0]["match_id"]
             try:
                 latest_remembered_match_id = channel_data["valorant"]["latest_match_id"]
@@ -262,16 +279,20 @@ class Valorant(commands.Cog):
             if latest_match_id == latest_remembered_match_id:
                 continue
 
+            # Update the latest remembered match ID
             channel_data["valorant"]["latest_match_id"] = latest_match_id
             data.update_data(document_id=channel_id, new_data=channel_data)
 
+            # Retrieve detailed information about the latest match
             match = await get_match(latest_match_id)
             match_json = match.json()
 
+            # Extract relevant match details
             all_players = match_json["data"]["players"]["all_players"]
             user_data = [player for player in all_players if
                          player["name"].lower() == name.lower() and player["tag"].lower() == discriminator.lower()]
 
+            # Extract match outcome and player statistics
             red_team_rounds_won, blue_team_rounds_won = (match_json['data']['teams'][team]['rounds_won'] for team in
                                                          ['red', 'blue'])
             score = f"{max(red_team_rounds_won, blue_team_rounds_won)}-{min(red_team_rounds_won, blue_team_rounds_won)}"
@@ -293,6 +314,7 @@ class Valorant(commands.Cog):
             headshots, bodyshots, legshots = stats['headshots'], stats['bodyshots'], stats['legshots']
             headshot_percentage = round((headshots / (headshots + bodyshots + legshots) * 100))
 
+            # Prepare and send the win/loss notification message
             if rr_difference <= 0:
                 message_header = f"😭{stream.user.name} lost {rr_difference}RR on {map} | "
                 message_footer = "😭"
@@ -300,7 +322,13 @@ class Valorant(commands.Cog):
                 message_header = f"PartyHat {stream.user.name} gained {rr_difference}RR on {map} | "
                 message_footer = "PartyHat"
 
-            message_body = f"Score: {score} | KDA: {kills}/{deaths}/{assists} | Agent: {agent} | Abilties: {e_cast_name} {e_casts} times, {q_cast_name} {q_casts} times, {c_cast_name} {c_casts} times, {x_cast_name} {x_casts} times | Headshot: {headshot_percentage}% | Tracker: https://tracker.gg/valorant/match/{latest_match_id} "
+            message_body = (
+                f"Score: {score} | KDA: {kills}/{deaths}/{assists} | Agent: {agent} | "
+                f"Abilities: {e_cast_name} {e_casts} times, {q_cast_name} {q_casts} times, "
+                f"{c_cast_name} {c_casts} times, {x_cast_name} {x_casts} times | "
+                f"Headshot: {headshot_percentage}% | "
+                f"Tracker: https://tracker.gg/valorant/match/{latest_match_id} "
+            )
 
             await self.bot.get_channel(stream.user.name).send(message_header + message_body + message_footer)
 

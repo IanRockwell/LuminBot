@@ -4,30 +4,37 @@ from typing import Optional
 from bot.utilities import ids, known_bots
 from data import data
 
-from datetime import datetime
-
-import time
-
 
 class Firsts(commands.Cog):
+    """
+    A Twitch bot cog for handling 'firsts' related commands and events.
+    """
 
     def __init__(self, bot: commands.Bot):
+        """
+        Initializes the Firsts cog.
+
+        Parameters:
+            bot (commands.Bot): The Twitch bot instance.
+        """
         self.bot = bot
 
     @commands.command(aliases=["firsts"])
-    @commands.cooldown(rate=1, per=10, bucket=commands.Bucket.channel)
+    @commands.cooldown(rate=1, per=5, bucket=commands.Bucket.channel)
     async def first(self, ctx: commands.Context, *, arg: Optional[str] = None):
         """
-        Command for viewing all firsts related data
+        Command for viewing all 'firsts' related data.
 
         Parameters:
             ctx (commands.Context): The command context.
+            arg (Optional[str]): Additional arguments for the command.
 
         Usage:
             !first
             !first top
         """
 
+        # Get channel data
         channel_id = ids.get_id_from_name(ctx.channel.name)
         channel_data = data.get_data(channel_id)
 
@@ -38,51 +45,75 @@ class Firsts(commands.Cog):
             pass
 
         if arg is None:
-
-            user_id = ctx.author.id
-            user_data = data.get_data(user_id)
-
-            try:
-                firsts = user_data[f"streamer_{channel_id}_firsts"]["firsts"]
-            except (KeyError, ValueError):
-                firsts = 0
-
-            try:
-                first_person = channel_data["firsts"]["first_person"]
-            except (KeyError, ValueError):
-                first_person = "None"
-
-            await ctx.reply(f"PartyHat {first_person} was here first! PartyHat You have been first {firsts} times PartyHat")
+            await self.handle_basic_firsts(ctx, channel_id, channel_data)
             return
 
-        arg = arg.replace(" 󠀀", "")  # why oh why are there invisible characters in my twitch messages
+        arg = arg.replace(" 󠀀", "")
 
         if arg == "top":
-
-            leaderboard = "PogChamp Top Firsts: "
-
-            sorted_documents = data.get_sorted_document_ids(f"streamer_{channel_id}_firsts.firsts")
-
-            for index, document_id in enumerate(sorted_documents):
-
-                if index >= 10:
-                    break
-
-                document = data.get_data(document_id)
-                document_firsts = document[f"streamer_{channel_id}_firsts"]["firsts"]
-                document_user = ids.get_name_from_id(document_id)
-
-                leaderboard = leaderboard + f"{index + 1}. {document_user} ({document_firsts}), "
-
-            await ctx.reply(leaderboard + "PogChamp")
+            await self.handle_top_firsts(ctx, channel_id)
             return
+
+    async def handle_basic_firsts(self, ctx: commands.Context, channel_id: str, channel_data: dict):
+        """
+        Helper method to handle basic 'firsts' command.
+
+        Parameters:
+            ctx (commands.Context): The command context.
+            channel_id (str): The channel ID.
+            channel_data (dict): The channel data.
+        """
+        user_id = ctx.author.id
+        user_data = data.get_data(user_id)
+
+        try:
+            firsts = user_data[f"streamer_{channel_id}_firsts"]["firsts"]
+        except (KeyError, ValueError):
+            firsts = 0
+
+        try:
+            first_person = channel_data["firsts"]["first_person"]
+        except (KeyError, ValueError):
+            first_person = "None"
+
+        await ctx.reply(f"PartyHat {first_person} was here first! PartyHat You have been first {firsts} times PartyHat")
+
+    async def handle_top_firsts(self, ctx: commands.Context, channel_id: str):
+        """
+        Helper method to handle 'top firsts' command.
+
+        Parameters:
+            ctx (commands.Context): The command context.
+            channel_id (str): The channel ID.
+        """
+        leaderboard = "PogChamp Top Firsts: "
+
+        sorted_documents = data.get_sorted_document_ids(f"streamer_{channel_id}_firsts.firsts")
+
+        for index, document_id in enumerate(sorted_documents):
+            if index >= 10:
+                break
+
+            document = data.get_data(document_id)
+            document_firsts = document[f"streamer_{channel_id}_firsts"]["firsts"]
+            document_user = ids.get_name_from_id(document_id)
+
+            leaderboard += f"{index + 1}. {document_user} ({document_firsts}), "
+
+        await ctx.reply(leaderboard + "PogChamp")
 
     @commands.Cog.event()
     async def event_message(self, message):
+        """
+        Event handler for incoming messages.
 
+        Parameters:
+            message: The incoming message.
+        """
         if message.content.startswith("!"):
             return
 
+        # Get channel data
         channel_id = ids.get_id_from_name(message.channel.name)
         channel_data = data.get_data(channel_id)
 
