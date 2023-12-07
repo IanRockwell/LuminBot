@@ -243,14 +243,8 @@ class Valorant(commands.Cog):
             channel_id = ids.get_id_from_name(stream.user.name)
             channel_data = data.get_data(channel_id)
 
-            try:
-                # Check if win/loss notifications are disabled for the channel
-                if "valorant.winlossnoti" in channel_data["disabled_features"]:
-                    return
-            except (KeyError, ValueError):
-                pass
-
-            if not channel_data:
+            # Check if win/loss notifications are disabled for the channel
+            if channel_data and "valorant.winlossnoti" in channel_data.get("disabled_features", []):
                 continue
 
             try:
@@ -270,17 +264,14 @@ class Valorant(commands.Cog):
 
             # Check if the latest match ID has been remembered
             latest_match_id = career_json["data"][0]["match_id"]
-            try:
-                latest_remembered_match_id = channel_data["valorant"]["latest_match_id"]
-            except (KeyError, ValueError):
-                latest_remembered_match_id = None
+            latest_remembered_match_id = channel_data.get("valorant", {}).get("latest_match_id")
 
             print(f"[valorant] comparing match ids {latest_match_id} - {latest_remembered_match_id}")
             if latest_match_id == latest_remembered_match_id:
                 continue
 
             # Update the latest remembered match ID
-            channel_data["valorant"]["latest_match_id"] = latest_match_id
+            channel_data.setdefault("valorant", {})["latest_match_id"] = latest_match_id
             data.update_data(document_id=channel_id, new_data=channel_data)
 
             # Retrieve detailed information about the latest match
@@ -289,8 +280,11 @@ class Valorant(commands.Cog):
 
             # Extract relevant match details
             all_players = match_json["data"]["players"]["all_players"]
-            user_data = [player for player in all_players if
-                         player["name"].lower() == name.lower() and player["tag"].lower() == discriminator.lower()]
+            user_data = next((player for player in all_players if player["name"].lower() == name.lower() and
+                              player["tag"].lower() == discriminator.lower()), None)
+
+            if not user_data:
+                continue
 
             # Extract match outcome and player statistics
             red_team_rounds_won, blue_team_rounds_won = (match_json['data']['teams'][team]['rounds_won'] for team in
@@ -301,31 +295,28 @@ class Valorant(commands.Cog):
 
             rr_difference = career_json['data'][0]['mmr_change_to_last_game']
 
-            agent = user_data[0]['character']
+            agent = user_data['character']
 
-            ability_casts = user_data[0]['ability_casts']
-            c_casts, q_casts, e_casts, x_casts = [ability_casts[ability] for ability in
-                                                  ['c_cast', 'q_cast', 'e_cast', 'x_cast']]
+            ability_casts = user_data['ability_casts']
+            c_cast, q_cast, e_cast, x_cast = [ability_casts.get(ability, 0) for ability in
+                                              ['c_cast', 'q_cast', 'e_cast', 'x_cast']]
             c_cast_name, q_cast_name, e_cast_name, x_cast_name = [get_ability(agent, ability) for ability in
                                                                   ['c', 'q', 'e', 'x']]
 
-            stats = user_data[0]['stats']
+            stats = user_data['stats']
             kills, deaths, assists = stats['kills'], stats['deaths'], stats['assists']
             headshots, bodyshots, legshots = stats['headshots'], stats['bodyshots'], stats['legshots']
             headshot_percentage = round((headshots / (headshots + bodyshots + legshots) * 100))
 
             # Prepare and send the win/loss notification message
-            if rr_difference <= 0:
-                message_header = f"😭{stream.user.name} lost {rr_difference}RR on {map} | "
-                message_footer = "😭"
-            else:
-                message_header = f"PartyHat {stream.user.name} gained {rr_difference}RR on {map} | "
-                message_footer = "PartyHat"
+            message_header = f"😭{stream.user.name} lost {rr_difference}RR on {map} | " if rr_difference <= 0 else \
+                f"PartyHat {stream.user.name} gained {rr_difference}RR on {map} | "
+            message_footer = "😭" if rr_difference <= 0 else "PartyHat"
 
             message_body = (
                 f"Score: {score} | KDA: {kills}/{deaths}/{assists} | Agent: {agent} | "
-                f"Abilities: {e_cast_name} {e_casts} times, {q_cast_name} {q_casts} times, "
-                f"{c_cast_name} {c_casts} times, {x_cast_name} {x_casts} times | "
+                f"Abilities: {e_cast_name} {e_cast} times, {q_cast_name} {q_cast} times, "
+                f"{c_cast_name} {c_cast} times, {x_cast_name} {x_cast} times | "
                 f"Headshot: {headshot_percentage}% | "
                 f"Tracker: https://tracker.gg/valorant/match/{latest_match_id} "
             )
