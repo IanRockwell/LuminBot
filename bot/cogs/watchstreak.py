@@ -46,41 +46,61 @@ class Watchstreak(commands.Cog):
 
         if arg is None:
             # Display user's watchstreak information
-            user_id = ctx.author.id
-            user_data = data.get_data(user_id)
-
-            try:
-                watchstreak = user_data[f"streamer_{channel_id}_watchstreaks"]["watchstreak"]
-            except (KeyError, ValueError):
-                watchstreak = "None"
-
-            try:
-                watchstreak_record = user_data[f"streamer_{channel_id}_watchstreaks"]["watchstreak_record"]
-            except (KeyError, ValueError):
-                watchstreak_record = "None"
-
-            await ctx.reply(f"PartyHat Your current watchstreak is: {watchstreak} (Your record is: {watchstreak_record})")
+            await self.handle_basic_watchstreak(ctx, channel_id)
             return
 
         arg = arg.replace(" 󠀀", "")  # Remove invisible characters from the argument
 
         if arg == "top":
             # Display the top 10 watchstreaks in the channel
-            leaderboard = "PogChamp Top Active Watchstreaks: "
-            sorted_documents = data.get_sorted_document_ids(f"streamer_{channel_id}_watchstreaks.watchstreak")
-
-            for index, document_id in enumerate(sorted_documents):
-                if index >= 10:
-                    break
-
-                document = data.get_data(document_id)
-                document_watchstreak = document[f"streamer_{channel_id}_watchstreaks"]["watchstreak"]
-                document_user = ids.get_name_from_id(document_id)
-
-                leaderboard = leaderboard + f"{index + 1}. {document_user} ({document_watchstreak}), "
-
-            await ctx.reply(leaderboard + "PogChamp")
+            await self.handle_top_watchstreaks(ctx, channel_id)
             return
+
+    async def handle_basic_watchstreak(self, ctx: commands.Context, channel_id: str):
+        """
+        Helper method to handle basic 'watchstreak' command.
+
+        Parameters:
+            ctx (commands.Context): The command context.
+            channel_id (str): The channel ID.
+        """
+        user_id = ctx.author.id
+        user_data = data.get_data(user_id)
+
+        try:
+            watchstreak = user_data[f"streamer_{channel_id}_watchstreaks"]["watchstreak"]
+        except (KeyError, ValueError):
+            watchstreak = "None"
+
+        try:
+            watchstreak_record = user_data[f"streamer_{channel_id}_watchstreaks"]["watchstreak_record"]
+        except (KeyError, ValueError):
+            watchstreak_record = "None"
+
+        await ctx.reply(f"PartyHat Your current watchstreak is: {watchstreak} (Your record is: {watchstreak_record})")
+
+    async def handle_top_watchstreaks(self, ctx: commands.Context, channel_id: str):
+        """
+        Helper method to handle 'top watchstreaks' command.
+
+        Parameters:
+            ctx (commands.Context): The command context.
+            channel_id (str): The channel ID.
+        """
+        leaderboard = "PogChamp Top Active Watchstreaks: "
+        sorted_documents = data.get_sorted_document_ids(f"streamer_{channel_id}_watchstreaks.watchstreak")
+
+        for index, document_id in enumerate(sorted_documents):
+            if index >= 10:
+                break
+
+            document = data.get_data(document_id)
+            document_watchstreak = document[f"streamer_{channel_id}_watchstreaks"]["watchstreak"]
+            document_user = ids.get_name_from_id(document_id)
+
+            leaderboard = leaderboard + f"{index + 1}. {document_user} ({document_watchstreak}), "
+
+        await ctx.reply(leaderboard + "PogChamp")
 
     @commands.Cog.event()
     async def event_message(self, message):
