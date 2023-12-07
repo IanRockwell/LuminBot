@@ -266,7 +266,7 @@ class Valorant(commands.Cog):
             latest_match_id = career_json["data"][0]["match_id"]
             latest_remembered_match_id = channel_data.get("valorant", {}).get("latest_match_id")
 
-            print(f"[valorant] comparing match ids {latest_match_id} - {latest_remembered_match_id}")
+            print(f"[valorant] {stream.user.name} -> comparing match ids {latest_match_id} - {latest_remembered_match_id}")
             if latest_match_id == latest_remembered_match_id:
                 continue
 
@@ -309,7 +309,7 @@ class Valorant(commands.Cog):
             headshot_percentage = round((headshots / (headshots + bodyshots + legshots) * 100))
 
             # Prepare and send the win/loss notification message
-            message_header = f"😭{stream.user.name} lost {rr_difference}RR on {map} | " if rr_difference <= 0 else \
+            message_header = f"😭{stream.user.name} lost {abs(rr_difference)}RR on {map} | " if rr_difference <= 0 else \
                 f"PartyHat {stream.user.name} gained {rr_difference}RR on {map} | "
             message_footer = "😭" if rr_difference <= 0 else "PartyHat"
 
@@ -320,6 +320,8 @@ class Valorant(commands.Cog):
                 f"Headshot: {headshot_percentage}% | "
                 f"Tracker: https://tracker.gg/valorant/match/{latest_match_id} "
             )
+
+            print(f"[valorant] {stream.user.name} -> {abs(rr_difference)}RR on {map} https://tracker.gg/valorant/match/{latest_match_id}")
 
             await self.bot.get_channel(stream.user.name).send(message_header + message_body + message_footer)
 
