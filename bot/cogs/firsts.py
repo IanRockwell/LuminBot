@@ -117,11 +117,8 @@ class Firsts(commands.Cog):
         channel_id = ids.get_id_from_name(message.channel.name)
         channel_data = data.get_data(channel_id)
 
-        try:
-            if "firsts" in channel_data["disabled_features"]:
-                return
-        except (KeyError, ValueError):
-            pass
+        if channel_data.get("disabled_features", {}).get("firsts"):
+            return
 
         try:
             user_id = message.author.id
@@ -151,22 +148,15 @@ class Firsts(commands.Cog):
 
         user_data = data.get_data(user_id)
 
-        try:
-            user_firsts = user_data[f"streamer_{channel_id}_firsts"]["firsts"]
-            user_firsts += 1
-        except (KeyError, ValueError):
-            user_firsts = 1
+        user_firsts = user_data.get(f"streamer_{channel_id}_firsts", {}).get("firsts", 0) + 1
 
-        try:
-            user_data[f"streamer_{channel_id}_firsts"]["firsts"] = user_firsts
-        except (KeyError, ValueError):
-            user_data[f"streamer_{channel_id}_firsts"] = {}
-            user_data[f"streamer_{channel_id}_firsts"]["firsts"] = user_firsts
+        user_data.setdefault(f"streamer_{channel_id}_firsts", {})
+        user_data[f"streamer_{channel_id}_firsts"]["firsts"] = user_firsts
 
         data.update_data(message.author.id, user_data)
 
-        await self.bot.get_channel(message.channel.name).send(
-            f"PartyHat {message.author.name} was first and now has {user_firsts} firsts! PartyHat")
+        channel = self.bot.get_channel(message.channel.name)
+        await channel.send(f"PartyHat {message.author.name} was first and now has {user_firsts} firsts! PartyHat")
         print(
             f"[firsts] {message.author.name} was first and now has {user_firsts} firsts in {message.channel.name}'s channel")
 
