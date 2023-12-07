@@ -67,12 +67,14 @@ class Firsts(commands.Cog):
         user_data = data.get_data(user_id)
 
         try:
-            firsts = user_data[f"streamer_{channel_id}_firsts"]["firsts"]
+            firsts_data = user_data[f"streamer_{channel_id}_firsts"]
+            firsts = firsts_data.get("firsts", 0)
         except (KeyError, ValueError):
             firsts = 0
 
         try:
-            first_person = channel_data["firsts"]["first_person"]
+            first_person_data = channel_data["firsts"]
+            first_person = first_person_data.get("first_person", "None")
         except (KeyError, ValueError):
             first_person = "None"
 

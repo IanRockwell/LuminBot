@@ -68,14 +68,11 @@ class Watchstreak(commands.Cog):
         user_data = data.get_data(user_id)
 
         try:
-            watchstreak = user_data[f"streamer_{channel_id}_watchstreaks"]["watchstreak"]
+            watchstreak_data = user_data[f"streamer_{channel_id}_watchstreaks"]
+            watchstreak = watchstreak_data.get("watchstreak", "None")
+            watchstreak_record = watchstreak_data.get("watchstreak_record", "None")
         except (KeyError, ValueError):
-            watchstreak = "None"
-
-        try:
-            watchstreak_record = user_data[f"streamer_{channel_id}_watchstreaks"]["watchstreak_record"]
-        except (KeyError, ValueError):
-            watchstreak_record = "None"
+            watchstreak = watchstreak_record = "None"
 
         await ctx.reply(f"PartyHat Your current watchstreak is: {watchstreak} (Your record is: {watchstreak_record})")
 
