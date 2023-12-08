@@ -144,7 +144,7 @@ class Osu(commands.Cog):
                                      ok=recent_info[0]["count100"],
                                      meh=recent_info[0]["count50"],
                                      miss=recent_info[0]["countmiss"],
-                                     mods=osu_mods_to_list(int(recent_info[0]["enabled_mods"])))
+                                     mods=convert_osu_mods_to_readable(mods_integer=int((recent_info[0]["enabled_mods"])), output_format="list"))
 
         beatmap_id = recent_info[0]["beatmap_id"]
 
@@ -181,14 +181,14 @@ class Osu(commands.Cog):
                                          ok=recent_info[0]["count100"],
                                          meh=recent_info[0]["count50"],
                                          miss=miss_simulate,
-                                         mods=osu_mods_to_list(int(recent_info[0]["enabled_mods"])))
+                                         mods=convert_osu_mods_to_readable(mods_integer=int((recent_info[0]["enabled_mods"])), output_format="list"))
             if_fc_local_pp = if_fc_pp_info['local_pp']
             if_fc_acc = if_fc_pp_info['accuracy']
             if_fc = f" ({round(if_fc_local_pp)}pp for {if_fc_acc}% FC)"
 
         rank = recent_info[0]["rank"]
         mods = recent_info[0]["enabled_mods"]
-        mods_string = osu_mods_to_string(int(mods))
+        mods_string = convert_osu_mods_to_readable(mods_integer=int((recent_info[0]["enabled_mods"])), output_format="string")
 
         await ctx.reply(
             f"Recent Score: {beatmap_title} [{beatmap_diff_name}] ({new_sr}⭐️) +{mods_string} https://osu.ppy.sh/b/{beatmap_id} | Accuracy: {accuracy:.2f}% | {round(local_pp)}pp{if_fc} | Combo: {max_combo}/{beatmap_max_combo} | {miss}❌ | Rank: {rank}")
@@ -277,7 +277,7 @@ class Osu(commands.Cog):
         beatmap_stars = round(float(beatmap_info["difficultyrating"]), 2)
 
         mods = recent_request.json()[0]["enabled_mods"]
-        mods_string = osu_mods_to_string(int(mods))
+        mods_string = convert_osu_mods_to_readable(mods_integer=int(mods), output_format="string")
 
         pp_values_request = await get_pp_values(beatmap_id, mods)
 
@@ -492,15 +492,16 @@ async def get_pp_value(beatmap_id, mods, good, ok, meh, miss, combo):
             return None
 
 
-def osu_mods_to_string(mods_integer):
+def convert_osu_mods_to_readable(mods_integer, output_format):
     """
-    Convert osu mods from integer to string representation.
+    Convert osu mods from integer to string or list representation.
 
     Parameters:
     - mods_integer (int): The integer representation of osu mods.
+    - output_format (str): The desired output format ('string' or 'list').
 
     Returns:
-    str: The string representation of osu mods.
+    str or list: The string or list representation of osu mods.
     """
     mods = {
         0: "NoMod",  # No Mod
@@ -537,74 +538,17 @@ def osu_mods_to_string(mods_integer):
     }
 
     if mods_integer == 0:
-        return "NoMod"
+        return "NoMod" if output_format == 'string' else []
 
-    mod_string = ""
+    mods_representation = []
     for mod_value in sorted(mods.keys(), key=lambda x: mods[x], reverse=True):
         if mods_integer & mod_value:
-            if mods[mod_value] == "DT" and "NC" in mod_string:
-                continue  # Skip adding DT if NC is already in mod_string
-            mod_string += mods[mod_value]
-
-    return mod_string
-
-
-def osu_mods_to_list(mods_integer):
-    """
-    Convert osu mods from integer to a list of string representations.
-
-    Parameters:
-    - mods_integer (int): The integer representation of osu mods.
-
-    Returns:
-    list: A list containing string representations of osu mods.
-    """
-    mods = {
-        0: "NoMod",  # No Mod
-        1: "NF",  # No Fail
-        2: "EZ",  # Easy
-        4: "TD",  # Touch Device
-        8: "HD",  # Hidden
-        16: "HR",  # Hard Rock
-        32: "SD",  # Sudden Death
-        64: "DT",  # Double Time
-        128: "RX",  # Relax
-        256: "HT",  # Half Time
-        512: "NC",  # Nightcore
-        1024: "FL",  # Flashlight
-        2048: "AU",  # Autoplay
-        4096: "SO",  # Spun Out
-        8192: "AP",  # Autopilot
-        16384: "PF",  # Perfect
-        32768: "4K",  # Key 4
-        65536: "5K",  # Key 5
-        131072: "6K",  # Key 6
-        262144: "7K",  # Key 7
-        524288: "8K",  # Key 8
-        1048576: "FI",  # Fade In
-        2097152: "RD",  # Random
-        4194304: "CN",  # Cinema
-        8388608: "TP",  # Target Practice
-        16777216: "9K",  # Key 9
-        33554432: "CO",  # Key Co-op
-        67108864: "1K",  # Key 1
-        134217728: "3K",  # Key 3
-        268435456: "2K",  # Key 2
-        536870912: "V2",  # ScoreV2
-    }
-
-    if mods_integer == 0:
-        return []
-
-    mod_list = []
-    for mod_value in sorted(mods.keys(), key=lambda x: mods[x], reverse=True):
-        if mods_integer & mod_value:
-            if mods[mod_value] == "NC":
-                mod_list.append("DT")
+            if mods[mod_value] == "NC" and output_format == 'list':
+                mods_representation.append("DT")
             else:
-                mod_list.append(mods[mod_value])
+                mods_representation.append(mods[mod_value])
 
-    return mod_list
+    return mods_representation if output_format == 'list' else ''.join(mods_representation)
 
 
 def prepare(bot: commands.Bot):
