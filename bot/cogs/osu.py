@@ -465,12 +465,6 @@ async def get_pp_value(beatmap_id, mods, good, ok, meh, miss, combo):
     """
     url = "https://pp-api.huismetbenen.nl/calculate-score"
 
-    headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': 'YOUR_AUTH_TOKEN_HERE',  # Replace with your actual authorization token
-    }
-
     data = {
         'map_id': beatmap_id,
         'mods': mods,
@@ -484,7 +478,7 @@ async def get_pp_value(beatmap_id, mods, good, ok, meh, miss, combo):
 
     async with aiohttp.ClientSession() as session:
         try:
-            async with session.patch(url=url, json=data, headers=headers) as response:
+            async with session.patch(url=url, json=data) as response:
                 response.raise_for_status()
                 return await response.json()  # Use await to get the JSON response
         except aiohttp.ClientError as client_err:
