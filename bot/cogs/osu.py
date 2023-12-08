@@ -172,7 +172,7 @@ class Osu(commands.Cog):
 
         if_fc = ""
 
-        if miss > 1 or max_combo > beatmap_max_combo + 9:
+        if int(miss) > 1 or int(max_combo) > int(beatmap_max_combo) + 9:
             miss_simulate = 0
             max_combo_simulate = beatmap_max_combo
             if_fc_pp_info = await get_pp_value(beatmap_id=beatmap_id,
