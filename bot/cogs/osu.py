@@ -443,6 +443,26 @@ async def get_pp_values(beatmap_id, mods):
 
 
 async def get_pp_value(beatmap_id, mods, good, ok, meh, miss, combo):
+    """
+    Calculate osu! performance points (PP) for a specific play.
+
+    Parameters:
+    - beatmap_id (str): The osu! beatmap ID.
+    - mods (str): The osu! mods applied to the play.
+    - good (int): The number of "good" hits in the play.
+    - ok (int): The number of "ok" hits in the play.
+    - meh (int): The number of "meh" hits in the play.
+    - miss (int): The number of misses in the play.
+    - combo (int): The maximum combo achieved in the play.
+
+    Returns:
+    dict: A dictionary containing the calculated PP values and additional information.
+        - 'accuracy': The accuracy of the play as a percentage.
+        - 'max_combo': The maximum combo achieved in the play.
+        - 'miss': The number of misses in the play.
+        - 'local_pp': The calculated PP value for the play.
+        - 'newSR': The new star rating of the beatmap after applying mods.
+    """
     url = "https://pp-api.huismetbenen.nl/calculate-score"
 
     headers = {
