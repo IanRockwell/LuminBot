@@ -40,8 +40,11 @@ class FeatureToggle(commands.Cog):
             "watchstreaks",  # Entire watchstreaks feature
             "firsts",  # Entire firsts feature
             "rank",  # Global rank command
+
             "osu.map",  # osu related
             "osu.profile",  # osu related
+            "osu.recent",  # osu related
+
             "valorant.radiant",  # valorant related
             "valorant.record",  # valorant related
             "valorant.winlossnoti"  # valorant related

@@ -2,6 +2,7 @@ from twitchio.ext import commands
 from typing import Optional
 from dotenv import load_dotenv
 
+import aiohttp
 import os
 import requests
 
@@ -12,6 +13,7 @@ load_dotenv()
 
 PP_ADDICT_APIKEY = os.getenv("PP_ADDICT_APIKEY")
 OSU_V1_APIKEY = os.getenv("OSU_V1_APIKEY")
+
 
 class Osu(commands.Cog):
     """
@@ -101,6 +103,79 @@ class Osu(commands.Cog):
         data.update_data(document_id=channel_id, new_data=channel_data)
 
         await ctx.reply("Successfully unlinked osu.")
+
+    @commands.command(aliases=["rs"])
+    @commands.cooldown(rate=1, per=5, bucket=commands.Bucket.channel)
+    async def recent(self, ctx: commands.Context, *, arg: Optional[str] = None):
+        """
+        Command for viewing the player's recent play
+
+        Parameters:
+            ctx (commands.Context): The context of the command.
+            arg (Optional[str]): Additional arguments for the command.
+
+        Usage:
+            !recent
+        """
+
+        channel_id = ids.get_id_from_name(ctx.channel.name)
+        channel_data = data.get_data(channel_id)
+
+        try:
+            if "osu.recent" in channel_data["disabled_features"]:
+                return
+        except (KeyError, ValueError):
+            pass
+
+        try:
+            user_id = channel_data["osu"]["user_id"]
+        except (KeyError, ValueError):
+            return
+
+        recent_request = await get_recent(user_id)
+        recent_info = recent_request.json()
+        if not recent_info:
+            await ctx.reply(f"{ctx.channel.name} has not played a map recently.")
+            return
+
+        pp_info = await get_pp_value(beatmap_id=recent_info[0]["beatmap_id"],
+                                     combo=recent_info[0]["maxcombo"],
+                                     good=recent_info[0]["count300"],
+                                     ok=recent_info[0]["count100"],
+                                     meh=recent_info[0]["count50"],
+                                     miss=recent_info[0]["countmiss"],
+                                     mods=osu_mods_to_list(int(recent_info[0]["enabled_mods"])))
+
+        beatmap_id = recent_info[0]["beatmap_id"]
+
+        beatmap_request = await get_beatmap(beatmap_id)
+        beatmap_info = beatmap_request.json()[0]
+
+        beatmap_title = beatmap_info["title"]
+        beatmap_diff_name = beatmap_info["version"]
+        beatmap_max_combo = beatmap_info["max_combo"]
+
+        accuracy = pp_info['accuracy']
+        max_combo = pp_info['max_combo']
+        miss = pp_info['miss']
+        local_pp = pp_info['local_pp']
+        new_sr = pp_info['newSR']
+
+        """
+        perfect = pp_info['perfect']
+        great = pp_info['great']
+        good = pp_info['good']
+        aim_pp = pp_info['aim_pp']
+        tap_pp = pp_info['tap_pp']
+        acc_pp = pp_info['acc_pp']
+        """
+
+        rank = recent_info[0]["rank"]
+        mods = recent_info[0]["enabled_mods"]
+        mods_string = osu_mods_to_string(int(mods))
+
+        await ctx.reply(f"Just played: {beatmap_title} [{beatmap_diff_name}] ({new_sr}⭐️) +{mods_string} https://osu.ppy.sh/b/{beatmap_id} | PP: {round(local_pp)} | Accuracy: {accuracy:.2f}% | Combo: {max_combo}/{beatmap_max_combo} | {miss} misses | Rank: {rank}")
+
 
     @commands.command(aliases=["osu"])
     @commands.cooldown(rate=1, per=5, bucket=commands.Bucket.channel)
@@ -200,8 +275,9 @@ class Osu(commands.Cog):
         for key, value in accuracy_values.items():
             pp_values_string += f"{round(float(key) * 100)}%: {value}PP, "
 
-        reply_message = f"{beatmap_title} [{beatmap_diff_name}] ({beatmap_stars}) +{mods_string} https://osu.ppy.sh/b/{beatmap_id} | {pp_values_string}"
+        reply_message = f"{beatmap_title} [{beatmap_diff_name}] ({beatmap_stars}⭐️) +{mods_string} https://osu.ppy.sh/b/{beatmap_id} | {pp_values_string}"
         await ctx.reply(reply_message)
+
 
 async def get_rank(channel_name):
     """
@@ -263,6 +339,7 @@ async def get_user(username):
         print(f"Error retrieving osu! user information: {req_err}")
         return None
 
+
 async def get_recent(user_id):
     """
     Get the most recent osu play information for a user.
@@ -289,6 +366,7 @@ async def get_recent(user_id):
     except requests.exceptions.RequestException as req_err:
         print(f"Error retrieving osu! recent information: {req_err}")
         return None
+
 
 async def get_beatmap(beatmap_id):
     """
@@ -348,6 +426,36 @@ async def get_pp_values(beatmap_id, mods):
         return None
 
 
+async def get_pp_value(beatmap_id, mods, good, ok, meh, miss, combo):
+    url = "https://pp-api.huismetbenen.nl/calculate-score"
+
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': 'YOUR_AUTH_TOKEN_HERE',  # Replace with your actual authorization token
+    }
+
+    data = {
+        'map_id': beatmap_id,
+        'mods': mods,
+        'good': good,
+        'ok': ok,
+        'meh': meh,
+        'miss': miss,
+        'combo': combo,
+        'rework': 'live',
+    }
+
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.patch(url=url, json=data, headers=headers) as response:
+                response.raise_for_status()
+                return await response.json()  # Use await to get the JSON response
+        except aiohttp.ClientError as client_err:
+            print(f"Error retrieving osu! PP values: {client_err}")
+            return None
+
+
 def osu_mods_to_string(mods_integer):
     """
     Convert osu mods from integer to string representation.
@@ -360,36 +468,36 @@ def osu_mods_to_string(mods_integer):
     """
     mods = {
         0: "NoMod",  # No Mod
-        1: "NF",     # No Fail
-        2: "EZ",     # Easy
-        4: "TD",     # Touch Device
-        8: "HD",     # Hidden
-        16: "HR",    # Hard Rock
-        32: "SD",    # Sudden Death
-        64: "DT",    # Double Time
-        128: "RX",   # Relax
-        256: "HT",   # Half Time
-        512: "NC",   # Nightcore
+        1: "NF",  # No Fail
+        2: "EZ",  # Easy
+        4: "TD",  # Touch Device
+        8: "HD",  # Hidden
+        16: "HR",  # Hard Rock
+        32: "SD",  # Sudden Death
+        64: "DT",  # Double Time
+        128: "RX",  # Relax
+        256: "HT",  # Half Time
+        512: "NC",  # Nightcore
         1024: "FL",  # Flashlight
         2048: "AU",  # Autoplay
         4096: "SO",  # Spun Out
         8192: "AP",  # Autopilot
-        16384: "PF", # Perfect
-        32768: "4K", # Key 4
-        65536: "5K", # Key 5
-        131072: "6K",# Key 6
-        262144: "7K",# Key 7
-        524288: "8K",# Key 8
-        1048576: "FI",# Fade In
-        2097152: "RD",# Random
-        4194304: "CN",# Cinema
-        8388608: "TP",# Target Practice
-        16777216: "9K",# Key 9
-        33554432: "CO",# Key Co-op
-        67108864: "1K",# Key 1
-        134217728: "3K",# Key 3
-        268435456: "2K",# Key 2
-        536870912: "V2",# ScoreV2
+        16384: "PF",  # Perfect
+        32768: "4K",  # Key 4
+        65536: "5K",  # Key 5
+        131072: "6K",  # Key 6
+        262144: "7K",  # Key 7
+        524288: "8K",  # Key 8
+        1048576: "FI",  # Fade In
+        2097152: "RD",  # Random
+        4194304: "CN",  # Cinema
+        8388608: "TP",  # Target Practice
+        16777216: "9K",  # Key 9
+        33554432: "CO",  # Key Co-op
+        67108864: "1K",  # Key 1
+        134217728: "3K",  # Key 3
+        268435456: "2K",  # Key 2
+        536870912: "V2",  # ScoreV2
     }
 
     if mods_integer == 0:
@@ -403,6 +511,65 @@ def osu_mods_to_string(mods_integer):
             mod_string += mods[mod_value]
 
     return mod_string
+
+
+def osu_mods_to_list(mods_integer):
+    """
+    Convert osu mods from integer to a list of string representations.
+
+    Parameters:
+    - mods_integer (int): The integer representation of osu mods.
+
+    Returns:
+    list: A list containing string representations of osu mods.
+    """
+    mods = {
+        0: "NoMod",  # No Mod
+        1: "NF",  # No Fail
+        2: "EZ",  # Easy
+        4: "TD",  # Touch Device
+        8: "HD",  # Hidden
+        16: "HR",  # Hard Rock
+        32: "SD",  # Sudden Death
+        64: "DT",  # Double Time
+        128: "RX",  # Relax
+        256: "HT",  # Half Time
+        512: "NC",  # Nightcore
+        1024: "FL",  # Flashlight
+        2048: "AU",  # Autoplay
+        4096: "SO",  # Spun Out
+        8192: "AP",  # Autopilot
+        16384: "PF",  # Perfect
+        32768: "4K",  # Key 4
+        65536: "5K",  # Key 5
+        131072: "6K",  # Key 6
+        262144: "7K",  # Key 7
+        524288: "8K",  # Key 8
+        1048576: "FI",  # Fade In
+        2097152: "RD",  # Random
+        4194304: "CN",  # Cinema
+        8388608: "TP",  # Target Practice
+        16777216: "9K",  # Key 9
+        33554432: "CO",  # Key Co-op
+        67108864: "1K",  # Key 1
+        134217728: "3K",  # Key 3
+        268435456: "2K",  # Key 2
+        536870912: "V2",  # ScoreV2
+    }
+
+    if mods_integer == 0:
+        return []
+
+    mod_list = []
+    for mod_value in sorted(mods.keys(), key=lambda x: mods[x], reverse=True):
+        if mods_integer & mod_value:
+            if mods[mod_value] == "NC":
+                mod_list.append("DT")
+            else:
+                mod_list.append(mods[mod_value])
+
+    return mod_list
+
 
 def prepare(bot: commands.Bot):
     bot.add_cog(Osu(bot))

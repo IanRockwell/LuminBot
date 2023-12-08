@@ -119,8 +119,11 @@ class Firsts(commands.Cog):
         channel_id = ids.get_id_from_name(message.channel.name)
         channel_data = data.get_data(channel_id)
 
-        if channel_data.get("disabled_features", {}).get("firsts"):
-            return
+        try:
+            if "firsts" in channel_data["disabled_features"]:
+                return
+        except (KeyError, ValueError):
+            pass
 
         try:
             user_id = message.author.id
