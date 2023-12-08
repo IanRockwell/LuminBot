@@ -105,7 +105,7 @@ class Osu(commands.Cog):
         await ctx.reply("Successfully unlinked osu.")
 
     @commands.command(aliases=["rs"])
-    @commands.cooldown(rate=1, per=5, bucket=commands.Bucket.channel)
+    @commands.cooldown(rate=1, per=20, bucket=commands.Bucket.channel)
     async def recent(self, ctx: commands.Context, *, arg: Optional[str] = None):
         """
         Command for viewing the player's recent play
