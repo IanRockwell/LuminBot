@@ -57,7 +57,10 @@ class GlobalRank(commands.Cog):
         # Format the result with game ranks
         for game, rank in ranks.items():
             if rank is not None:
-                result += f" {game}: {rank},"
+                result += f"{game}: {rank} | "
+
+        # Remove the trailing " | " if there is any
+        result = result.rstrip(" | ")
 
         # Check if there are linked accounts
         if result == "":

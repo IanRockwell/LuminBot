@@ -170,12 +170,28 @@ class Osu(commands.Cog):
         acc_pp = pp_info['acc_pp']
         """
 
+        if_fc = ""
+
+        if miss > 1 or max_combo > beatmap_max_combo + 9:
+            miss_simulate = 0
+            max_combo_simulate = beatmap_max_combo
+            if_fc_pp_info = await get_pp_value(beatmap_id=beatmap_id,
+                                         combo=max_combo_simulate,
+                                         good=recent_info[0]["count300"],
+                                         ok=recent_info[0]["count100"],
+                                         meh=recent_info[0]["count50"],
+                                         miss=miss_simulate,
+                                         mods=osu_mods_to_list(int(recent_info[0]["enabled_mods"])))
+            if_fc_local_pp = if_fc_pp_info['local_pp']
+            if_fc_acc = if_fc_pp_info['accuracy']
+            if_fc = f" ({round(if_fc_local_pp)}pp for {if_fc_acc}% FC)"
+
         rank = recent_info[0]["rank"]
         mods = recent_info[0]["enabled_mods"]
         mods_string = osu_mods_to_string(int(mods))
 
-        await ctx.reply(f"Just played: {beatmap_title} [{beatmap_diff_name}] ({new_sr}⭐️) +{mods_string} https://osu.ppy.sh/b/{beatmap_id} | PP: {round(local_pp)} | Accuracy: {accuracy:.2f}% | Combo: {max_combo}/{beatmap_max_combo} | {miss} misses | Rank: {rank}")
-
+        await ctx.reply(
+            f"Recent Score: {beatmap_title} [{beatmap_diff_name}] ({new_sr}⭐️) +{mods_string} https://osu.ppy.sh/b/{beatmap_id} | Accuracy: {accuracy:.2f}% | {round(local_pp)}pp{if_fc} | Combo: {max_combo}/{beatmap_max_combo} | {miss}❌ | Rank: {rank}")
 
     @commands.command(aliases=["osu"])
     @commands.cooldown(rate=1, per=5, bucket=commands.Bucket.channel)
