@@ -2,7 +2,7 @@
 
 # Lumin - Chat interaction enhancer
 
-Lumin is a Twitch bot that allows for chat integration for a variety of games.
+Lumin is a general purpose Twitch bot that specializes in a more interactive chat experience.
 
 [Join the discord](https://discord.gg/UzUaUkpC6g)
 
