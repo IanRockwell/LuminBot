@@ -5,6 +5,7 @@ import os
 # Database file
 DB_FILE = 'data.db'
 
+
 def create_table():
     """
     Create the 'documents' table if it doesn't exist in the database.
@@ -19,6 +20,7 @@ def create_table():
     ''')
     conn.commit()
     conn.close()
+
 
 def get_data(document_id):
     """
@@ -38,6 +40,7 @@ def get_data(document_id):
     conn.close()
     return json.loads(result[0]) if result else {}
 
+
 def update_data(document_id, new_data):
     """
     Update or insert data associated with a specific document_id into the 'documents' table.
@@ -55,6 +58,7 @@ def update_data(document_id, new_data):
     conn.commit()
     conn.close()
 
+
 def delete_data(document_id):
     """
     Delete data associated with a specific document_id from the 'documents' table.
@@ -70,6 +74,7 @@ def delete_data(document_id):
     c.execute('DELETE FROM documents WHERE document_id = ?', (document_id,))
     conn.commit()
     conn.close()
+
 
 def get_sorted_document_ids(sort_key):
     """
