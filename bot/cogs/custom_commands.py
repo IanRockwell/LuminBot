@@ -5,6 +5,7 @@ import re
 import aiohttp
 import asyncio
 import json
+import random
 from collections import defaultdict
 
 import time
@@ -92,7 +93,7 @@ class CustomCommands(commands.Cog):
             'usage_count': 0,
             'user_level': USER_LEVELS[0],
             'cooldown': DEFAULT_COMMAND_COOLDOWN,
-            'last_used': int(time.time()),
+            'last_used': 0,
             'aliases': []
         }
 
@@ -469,15 +470,60 @@ async def handle_urlfetch_response(response, url_params):
     if 'json' in url_params:
         try:
             json_data = await response.json()
-            fetched_content = process_json_response(json_data, url_params)
+            fetched_content = await process_json_response(json_data, url_params)
         except json.JSONDecodeError:
             fetched_content = "Error decoding JSON response."
     else:
         fetched_content = await response.text()
 
+    # Handle line parameter
+    if 'line' in url_params and len(url_params) > url_params.index('line') + 1:
+        line_param = url_params[url_params.index('line') + 1].lower()
+
+        if line_param.isdigit():
+            # Get the specified line number
+            line_number = int(line_param)
+            fetched_content = get_line_from_content(fetched_content, line_number)
+        elif line_param == 'random':
+            # Get a random line
+            fetched_content = get_random_line_from_content(fetched_content)
+
     return fetched_content
 
-def process_json_response(json_data, url_params):
+def get_line_from_content(content, line_number):
+    """
+    Get the specified line number from the content.
+
+    Parameters:
+        content (str): The content to extract the line from.
+        line_number (int): The line number to retrieve.
+
+    Returns:
+        str: The specified line or an error message if the line is not found.
+    """
+    lines = content.split('\n')
+    if 1 <= line_number <= len(lines):
+        return lines[line_number - 1]
+    else:
+        return f"Error: Line {line_number} not found in the response."
+
+def get_random_line_from_content(content):
+    """
+    Get a random line from the content.
+
+    Parameters:
+        content (str): The content to extract a random line from.
+
+    Returns:
+        str: A random line or an error message if the content is empty.
+    """
+    lines = content.split('\n')
+    if lines:
+        return random.choice(lines)
+    else:
+        return "Error: No lines found in the response."
+
+async def process_json_response(json_data, url_params):
     """
     Process JSON response from a URL fetch.
 
@@ -488,7 +534,7 @@ def process_json_response(json_data, url_params):
     Returns:
         str: The processed JSON content.
     """
-    # If the parameter "key" is present, use it to extract the specified JSON value
+    # If the parameter "json" is present, use it to extract the specified JSON value
     json_key = url_params[url_params.index('json') + 1] if 'json' in url_params and len(url_params) > url_params.index('json') + 1 else None
 
     if json_key:
@@ -496,22 +542,20 @@ def process_json_response(json_data, url_params):
         keys = json_key.split('.')
         nested_value = json_data
 
-        for key in keys:
-            if isinstance(nested_value, list):
-                # Handle the case where nested_value is a list
-                index = int(key)
-                if 0 <= index < len(nested_value):
+        try:
+            for key in keys:
+                if isinstance(nested_value, list):
+                    # Handle the case where nested_value is a list
+                    index = int(key)
                     nested_value = nested_value[index]
                 else:
-                    nested_value = None
-                    break
-            else:
-                nested_value = nested_value.get(key)
-                if nested_value is None:
-                    break
-
-        # If the value is a string, remove the quotes
-        fetched_content = nested_value if isinstance(nested_value, str) else json.dumps(nested_value, indent=2) if nested_value is not None else f"Key '{json_key}' not found in JSON response."
+                    nested_value = nested_value[key]
+        except (KeyError, IndexError, TypeError):
+            # Handle cases where the key is not found or the structure is not as expected
+            fetched_content = f"Key '{json_key}' not found in JSON response."
+        else:
+            # If the value is a string, remove the quotes
+            fetched_content = nested_value if isinstance(nested_value, str) else json.dumps(nested_value, indent=2)
     else:
         fetched_content = json.dumps(json_data, indent=2)
 
