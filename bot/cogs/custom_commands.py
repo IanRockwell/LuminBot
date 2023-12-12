@@ -4,6 +4,7 @@ import shlex
 import re
 import aiohttp
 import asyncio
+import json
 from collections import defaultdict
 
 import time
@@ -392,16 +393,16 @@ async def replace_placeholders(channel_id, message, command_message, command_dat
     Replace placeholders in the message with corresponding data.
 
     Parameters:
-        channel_id: The channel's ID.
-        message: The Discord message.
+        channel_id (int): The channel's ID.
+        message (discord.Message): The Discord message.
         command_message (str): The command message.
         command_data (dict): The data associated with the command.
 
     Returns:
         str: The message with placeholders replaced.
     """
-    message_content = message.content
-    message_content = message_content.replace(" 󠀀", "")  # Remove invisible characters from the argument
+    # Remove invisible characters from the argument
+    message_content = message.content.replace(" 󠀀", "")
 
     replacements = {
         "{count}": str(command_data["usage_count"]),
@@ -409,6 +410,7 @@ async def replace_placeholders(channel_id, message, command_message, command_dat
         "{user}": f"@{message.author.name}",
     }
 
+    # Replace placeholders in the message
     for placeholder, value in replacements.items():
         command_message = command_message.replace(placeholder, value)
 
@@ -418,7 +420,8 @@ async def replace_placeholders(channel_id, message, command_message, command_dat
 
     for match in matches:
         url_placeholder = match.group(0)
-        url = match.group(1)
+        url_params = match.group(1).split()  # Split parameters by spaces
+        url = url_params[0]
 
         # Check if the token bucket allows the urlfetch
         async with token_bucket_lock:
@@ -439,11 +442,10 @@ async def replace_placeholders(channel_id, message, command_message, command_dat
             # Consume a token and proceed with the urlfetch
             urlfetch_token_buckets[channel_id]["tokens"] -= 1
 
-        # Fetch content from the specified URL asynchronously
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as response:
-                    fetched_content = await response.text()
+                    fetched_content = await handle_urlfetch_response(response, url_params)
         except Exception as e:
             fetched_content = f"Error fetching content: {str(e)}"
 
@@ -451,6 +453,69 @@ async def replace_placeholders(channel_id, message, command_message, command_dat
         command_message = command_message.replace(url_placeholder, fetched_content)
 
     return command_message
+
+async def handle_urlfetch_response(response, url_params):
+    """
+    Handle the response from a URL fetch.
+
+    Parameters:
+        response (aiohttp.ClientResponse): The response from the URL fetch.
+        url_params (list): Parameters associated with the URL fetch.
+
+    Returns:
+        str: The fetched content.
+    """
+    # Check if the response is JSON
+    if 'json' in url_params:
+        try:
+            json_data = await response.json()
+            fetched_content = process_json_response(json_data, url_params)
+        except json.JSONDecodeError:
+            fetched_content = "Error decoding JSON response."
+    else:
+        fetched_content = await response.text()
+
+    return fetched_content
+
+def process_json_response(json_data, url_params):
+    """
+    Process JSON response from a URL fetch.
+
+    Parameters:
+        json_data (dict or list): JSON data from the response.
+        url_params (list): Parameters associated with the URL fetch.
+
+    Returns:
+        str: The processed JSON content.
+    """
+    # If the parameter "key" is present, use it to extract the specified JSON value
+    json_key = url_params[url_params.index('json') + 1] if 'json' in url_params and len(url_params) > url_params.index('json') + 1 else None
+
+    if json_key:
+        # Split the nested keys and traverse the JSON structure
+        keys = json_key.split('.')
+        nested_value = json_data
+
+        for key in keys:
+            if isinstance(nested_value, list):
+                # Handle the case where nested_value is a list
+                index = int(key)
+                if 0 <= index < len(nested_value):
+                    nested_value = nested_value[index]
+                else:
+                    nested_value = None
+                    break
+            else:
+                nested_value = nested_value.get(key)
+                if nested_value is None:
+                    break
+
+        # If the value is a string, remove the quotes
+        fetched_content = nested_value if isinstance(nested_value, str) else json.dumps(nested_value, indent=2) if nested_value is not None else f"Key '{json_key}' not found in JSON response."
+    else:
+        fetched_content = json.dumps(json_data, indent=2)
+
+    return fetched_content
 
 
 def prepare(bot: commands.Bot):
