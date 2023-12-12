@@ -5,8 +5,8 @@ from bot.cogs import watchstreak, firsts
 
 class GlobalEventHandler(commands.Cog):
     """
-    The class that handles any events that multiple cogs call
-    from at the same time to prevent any issues with race-conditions
+    The class that handles any events that multiple cogs call from at the
+    same time to prevent any issues with race-condition related issues
     """
 
     def __init__(self, bot: commands.Bot):
