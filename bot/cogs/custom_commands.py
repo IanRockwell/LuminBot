@@ -78,7 +78,7 @@ class CustomCommands(commands.Cog):
             'message': command_message,
             'usage_count': 0,
             'user_level': USER_LEVELS[0],
-            'cooldown': 5,
+            'cooldown': DEFAULT_COMMAND_COOLDOWN,
             'last_used': int(time.time()),
             'aliases': []
         }
