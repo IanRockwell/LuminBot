@@ -10,6 +10,8 @@ class LuminBot(commands.Bot):
     """
 
     cogs = [
+        "global_event_handler",
+
         "feature_toggle",
         "watchstreak",
         "firsts",

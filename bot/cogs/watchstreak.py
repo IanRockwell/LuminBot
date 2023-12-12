@@ -99,116 +99,110 @@ class Watchstreak(commands.Cog):
 
         await ctx.reply(leaderboard + "PogChamp")
 
-    @commands.Cog.event()
-    async def event_message(self, message):
-        """
-        Event handler for processing messages and updating watchstreaks.
 
-        Parameters:
-            message: The Twitch message.
-        """
+async def handle_message_event(bot, message):
+    """
+    Event handler for processing messages and updating watchstreaks.
 
-        # Check if watchstreaks feature is disabled for the channel
-        channel_id = ids.get_id_from_name(message.channel.name)
-        channel_data = data.get_data(channel_id)
+    Parameters:
+        bot: The Twitch bot instance.
+        message: The Twitch message.
+    """
 
-        try:
-            if "watchstreaks" in channel_data["disabled_features"]:
-                return
-        except (KeyError, ValueError):
-            pass
+    # Check if watchstreaks feature is disabled for the channel
+    channel_id = ids.get_id_from_name(message.channel.name)
+    channel_data = data.get_data(channel_id)
 
-        try:
-            user_id = message.author.id
-        except AttributeError:
+    try:
+        if "watchstreaks" in channel_data["disabled_features"]:
             return
+    except (KeyError, ValueError):
+        pass
 
-        # Fetch the current stream information
-        stream = await self.bot.fetch_streams(user_logins=[message.channel.name], type="live")
+    try:
+        user_id = message.author.id
+    except AttributeError:
+        return
 
-        if not stream:
-            return
+    # Fetch the current stream information
+    stream = await bot.fetch_streams(user_logins=[message.channel.name], type="live")
 
-        # Update data for the stream
-        channel_data.setdefault("firsts", {})
-        current_stream = channel_data["firsts"].get("current_stream")
+    if not stream:
+        return
 
-        # If the firsts event is currently running, stop processing watchstreaks
-        if current_stream != stream[0].id:
-            return
+    channel_data.setdefault("watchstreaks", {})
+    current_stream = channel_data["watchstreaks"].get("current_stream")
+    last_stream = channel_data["watchstreaks"].get("last_stream")
 
-        channel_data.setdefault("watchstreaks", {})
-        current_stream = channel_data["watchstreaks"].get("current_stream")
-        last_stream = channel_data["watchstreaks"].get("last_stream")
+    if current_stream != stream[0].id:
+        last_stream = current_stream
+        current_stream = stream[0].id
 
-        if current_stream != stream[0].id:
-            last_stream = current_stream
-            current_stream = stream[0].id
+        channel_data["watchstreaks"]["last_stream"] = last_stream
+        channel_data["watchstreaks"]["current_stream"] = current_stream
 
-            channel_data["watchstreaks"]["last_stream"] = last_stream
-            channel_data["watchstreaks"]["current_stream"] = current_stream
+        data.update_data(document_id=channel_id, new_data=channel_data)
 
-            data.update_data(document_id=channel_id, new_data=channel_data)
+        all_watchstreak_documents = data.get_documents_with_key(f"streamer_{channel_id}_watchstreaks.watchstreak")
 
-            all_watchstreak_documents = data.get_documents_with_key(f"streamer_{channel_id}_watchstreaks.watchstreak")
+        for document_id in all_watchstreak_documents:
+            document = data.get_data(document_id)
 
-            for document_id in all_watchstreak_documents:
-                document = data.get_data(document_id)
+            latest_stream = document[f"streamer_{channel_id}_watchstreaks"]["latest_stream"]
 
-                latest_stream = document[f"streamer_{channel_id}_watchstreaks"]["latest_stream"]
+            if latest_stream not in [last_stream, current_stream]:
+                del document[f"streamer_{channel_id}_watchstreaks"]["watchstreak"]
+                data.update_data(document_id, document)
 
-                if latest_stream not in [last_stream, current_stream]:
-                    del document[f"streamer_{channel_id}_watchstreaks"]["watchstreak"]
-                    data.update_data(document_id, document)
+    if message.author.name in known_bots.KNOWN_BOTS:
+        return
 
-        if message.author.name in known_bots.KNOWN_BOTS:
-            return
+    user_data = data.get_data(user_id)
 
-        user_data = data.get_data(user_id)
-
-        try:
-            user_watchstreak_data = user_data[f"streamer_{channel_id}_watchstreaks"]
-        except (KeyError, ValueError):
-            user_watchstreak_data = {
-                "latest_stream": current_stream,
-                "watchstreak": 1,
-                "watchstreak_record": 1,
-            }
-            user_data[f"streamer_{channel_id}_watchstreaks"] = user_watchstreak_data
-            data.update_data(user_id, user_data)
-            return
-
-        user_latest_stream = user_watchstreak_data["latest_stream"]
-        user_watchstreak = user_watchstreak_data["watchstreak"]
-        user_watchstreak_record = user_watchstreak_data["watchstreak_record"]
-
-        # Do nothing if the user's last stream is already this stream
-        if user_latest_stream == current_stream:
-            return
-
-        # If the user's last stream is not the last stream, reset watchstreak back to 1
-        if user_latest_stream != last_stream:
-            user_latest_stream = current_stream
-            user_watchstreak = 1
-        else:
-            # If the user's last stream is the last stream, add 1 to the watchstreak
-            user_latest_stream = current_stream
-            user_watchstreak += 1
-
-            if user_watchstreak % 5 == 0:
-                channel = self.bot.get_channel(message.channel.name)
-                await channel.send(
-                    f"PartyHat {message.author.name} has reached a watchstreak of {user_watchstreak}! PartyHat")
-                print(
-                    f"[watchstreak] {message.author.name} has reached a {user_watchstreak} watchstreak in {message.channel.name}'s channel")
-
-        user_watchstreak_data["latest_stream"] = user_latest_stream
-        user_watchstreak_data["watchstreak"] = user_watchstreak
-
-        if user_watchstreak_record < user_watchstreak:
-            user_watchstreak_data["watchstreak_record"] = user_watchstreak
-
+    try:
+        user_watchstreak_data = user_data[f"streamer_{channel_id}_watchstreaks"]
+    except (KeyError, ValueError):
+        user_watchstreak_data = {
+            "latest_stream": current_stream,
+            "watchstreak": 1,
+            "watchstreak_record": 1,
+        }
+        user_data[f"streamer_{channel_id}_watchstreaks"] = user_watchstreak_data
         data.update_data(user_id, user_data)
+        return
+
+    user_latest_stream = user_watchstreak_data["latest_stream"]
+    user_watchstreak = user_watchstreak_data["watchstreak"]
+    user_watchstreak_record = user_watchstreak_data["watchstreak_record"]
+
+    # Do nothing if the user's last stream is already this stream
+    if user_latest_stream == current_stream:
+        return
+
+    # If the user's last stream is not the last stream, reset watchstreak back to 1
+    if user_latest_stream != last_stream:
+        user_latest_stream = current_stream
+        user_watchstreak = 1
+    else:
+        # If the user's last stream is the last stream, add 1 to the watchstreak
+        user_latest_stream = current_stream
+        user_watchstreak += 1
+
+        if user_watchstreak % 5 == 0:
+            channel = bot.get_channel(message.channel.name)
+            await channel.send(
+                f"PartyHat {message.author.name} has reached a watchstreak of {user_watchstreak}! PartyHat")
+            print(
+                f"[watchstreak] {message.author.name} has reached a {user_watchstreak} watchstreak in {message.channel.name}'s channel")
+
+    user_watchstreak_data["latest_stream"] = user_latest_stream
+    user_watchstreak_data["watchstreak"] = user_watchstreak
+
+    if user_watchstreak_record < user_watchstreak:
+        user_watchstreak_data["watchstreak_record"] = user_watchstreak
+
+    data.update_data(user_id, user_data)
+
 
 def prepare(bot: commands.Bot):
     bot.add_cog(Watchstreak(bot))
