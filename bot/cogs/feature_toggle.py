@@ -37,6 +37,7 @@ class FeatureToggle(commands.Cog):
 
         # List of available features
         features = [
+            "customcommands", # Entire custom commands feature
             "watchstreaks",  # Entire watchstreaks feature
             "firsts",  # Entire firsts feature
             "rank",  # Global rank command

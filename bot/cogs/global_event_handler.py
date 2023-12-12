@@ -1,6 +1,6 @@
 from twitchio.ext import commands
 
-from bot.cogs import watchstreak, firsts
+from bot.cogs import watchstreak, firsts, custom_commands
 
 
 class GlobalEventHandler(commands.Cog):
@@ -29,6 +29,7 @@ class GlobalEventHandler(commands.Cog):
 
         await firsts.handle_firsts_message_event(self.bot, message)
         await watchstreak.handle_watchstreaks_message_event(self.bot, message)
+        await custom_commands.handle_command_message_event(self.bot, message)
 
 
 def prepare(bot: commands.Bot):
