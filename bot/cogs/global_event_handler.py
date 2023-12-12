@@ -27,8 +27,8 @@ class GlobalEventHandler(commands.Cog):
             message: The Twitch message.
         """
 
-        await firsts.handle_firsts_event(self.bot, message)
-        await watchstreak.handle_message_event(self.bot, message)
+        await firsts.handle_firsts_message_event(self.bot, message)
+        await watchstreak.handle_watchstreaks_message_event(self.bot, message)
 
 
 def prepare(bot: commands.Bot):

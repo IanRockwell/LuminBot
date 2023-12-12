@@ -100,7 +100,7 @@ class Watchstreak(commands.Cog):
         await ctx.reply(leaderboard + "PogChamp")
 
 
-async def handle_message_event(bot, message):
+async def handle_watchstreaks_message_event(bot, message):
     """
     Event handler for processing messages and updating watchstreaks.
 

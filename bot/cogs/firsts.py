@@ -105,7 +105,7 @@ class Firsts(commands.Cog):
         await ctx.reply(leaderboard + "PogChamp")
 
 
-async def handle_firsts_event(bot, message):
+async def handle_firsts_message_event(bot, message):
     """
     Event handler for processing firsts and updating data.
 
