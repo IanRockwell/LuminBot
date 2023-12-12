@@ -49,6 +49,18 @@ class CustomCommands(commands.Cog):
         self.bot = bot
 
     async def add_command(self, ctx: commands.Context, args: list, channel_id, channel_data):
+        """
+        Add a new custom command.
+
+        Parameters:
+            ctx (commands.Context): The context of the command.
+            args (list): The arguments passed with the command.
+            channel_id: The ID of the Twitch channel.
+            channel_data: The data associated with the Twitch channel.
+
+        Returns:
+            None
+        """
 
         # Check if the user is a mod or broadcaster
         if not ctx.author.is_mod and not ctx.author.is_broadcaster:
@@ -246,6 +258,16 @@ class CustomCommands(commands.Cog):
 
     @commands.command(aliases=["cmd"])
     async def command(self, ctx: commands.Context, *, arg: Optional[str] = None):
+        """
+        Handle custom command management.
+
+        Parameters:
+            ctx (commands.Context): The context of the command.
+            arg (Optional[str]): The arguments passed with the command.
+
+        Returns:
+            None
+        """
 
         channel_id = ids.get_id_from_name(ctx.channel.name)
         channel_data = data.get_data(channel_id)
@@ -309,11 +331,24 @@ async def handle_command_message_event(bot, message):
     # Check if the base command or any of its aliases are in the available commands
     for command, command_data in channel_data["commands"].items():
         if base_command == command or base_command in command_data.get("aliases", []):
-            await process_command(bot, message, channel_id, channel_data, command)
+            await process_command(message, channel_id, channel_data, command)
             break
 
 
-async def process_command(bot, message, channel_id, channel_data, command):
+async def process_command(message, channel_id, channel_data, command):
+    """
+    Process and execute a custom command.
+
+    Parameters:
+        bot: The Twitch bot instance.
+        message: The Twitch message.
+        channel_id: The ID of the Twitch channel.
+        channel_data: The data associated with the Twitch channel.
+        command (str): The name of the command to execute.
+
+    Returns:
+        None
+    """
     command_data = channel_data["commands"][command]
 
     current_time = int(time.time())
