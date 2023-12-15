@@ -56,6 +56,11 @@ class Watchstreak(commands.Cog):
             await self.handle_top_watchstreaks(ctx, channel_id)
             return
 
+        if arg == "recordtop":
+            # Display the top 10 all-time watchstreaks in the channel
+            await self.handle_recordtop_watchstreaks(ctx, channel_id)
+            return
+
     async def handle_basic_watchstreak(self, ctx: commands.Context, channel_id: str):
         """
         Helper method to handle basic 'watchstreak' command.
@@ -93,6 +98,30 @@ class Watchstreak(commands.Cog):
 
             document = data.get_data(document_id)
             document_watchstreak = document[f"streamer_{channel_id}_watchstreaks"]["watchstreak"]
+            document_user = ids.get_name_from_id(document_id)
+
+            leaderboard = leaderboard + f"{index + 1}. {document_user} ({document_watchstreak}), "
+
+        await ctx.reply(leaderboard + "PogChamp")
+
+
+    async def handle_recordtop_watchstreaks(self, ctx: commands.Context, channel_id: str):
+        """
+        Helper method to handle 'recordtop watchstreaks' command.
+
+        Parameters:
+            ctx (commands.Context): The command context.
+            channel_id (str): The channel ID.
+        """
+        leaderboard = "PogChamp Top Watchstreak Records: "
+        sorted_documents = data.get_sorted_document_ids(f"streamer_{channel_id}_watchstreaks.watchstreak_record")
+
+        for index, document_id in enumerate(sorted_documents):
+            if index >= 10:
+                break
+
+            document = data.get_data(document_id)
+            document_watchstreak = document[f"streamer_{channel_id}_watchstreaks"]["watchstreak_record"]
             document_user = ids.get_name_from_id(document_id)
 
             leaderboard = leaderboard + f"{index + 1}. {document_user} ({document_watchstreak}), "
