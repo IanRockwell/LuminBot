@@ -4,6 +4,7 @@ from typing import Optional
 from bot.utilities import ids, known_bots
 from data import data
 
+
 class Watchstreak(commands.Cog):
     """
     A Twitch bot cog for handling watchstreaks.
@@ -103,7 +104,6 @@ class Watchstreak(commands.Cog):
             leaderboard = leaderboard + f"{index + 1}. {document_user} ({document_watchstreak}), "
 
         await ctx.reply(leaderboard + "PogChamp")
-
 
     async def handle_recordtop_watchstreaks(self, ctx: commands.Context, channel_id: str):
         """

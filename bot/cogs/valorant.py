@@ -27,9 +27,6 @@ class Valorant(commands.Cog):
         """
         self.bot = bot
 
-        # Start the routine for win/loss notifications
-        self.win_loss_notifications.start()
-
     @commands.command(aliases=["valset"])
     async def valorantset(self, ctx: commands.Context, *, arg: Optional[str] = None):
         """
@@ -223,114 +220,104 @@ class Valorant(commands.Cog):
         await ctx.reply(
             f"{mention}{await get_radiant_rr(region)}RR is the current radiant threshold in {region.upper()}.")
 
-    @routines.routine(seconds=60)
-    async def win_loss_notifications(self):
-        """
-        Routine for checking win/loss notifications in connected channels.
-        """
 
-        connected_channels = self.bot.connected_channels
+async def win_loss_notifications(bot, streams):
+    """
+    Function for checking win/loss notifications in connected channels.
+    """
 
-        if not connected_channels:
-            return
+    for stream in streams:
+        # Check if the stream is playing Valorant
+        if stream.game_name != "VALORANT":
+            continue
 
-        user_logins = [channel.name for channel in connected_channels]
+        # Get channel data
+        channel_id = ids.get_id_from_name(stream.user.name)
+        channel_data = data.get_data(channel_id)
 
-        # Fetch live streams for connected channels
-        streams = await self.bot.fetch_streams(user_logins=user_logins, type="live")
+        # Check if win/loss notifications are disabled for the channel
+        if channel_data and "valorant.winlossnoti" in channel_data.get("disabled_features", []):
+            continue
 
-        for stream in streams:
-            # Check if the stream is playing Valorant
-            if stream.game_name != "VALORANT":
-                continue
+        try:
+            # Get Valorant account information for the channel
+            name, discriminator = channel_data["valorant"]["account_user"].split("#")
+            region = channel_data["valorant"]["account_region"]
+        except (KeyError, ValueError):
+            continue
 
-            # Get channel data
-            channel_id = ids.get_id_from_name(stream.user.name)
-            channel_data = data.get_data(channel_id)
+        # Retrieve career information for the Valorant account
+        career = await get_career(region=region, name=name, discriminator=discriminator)
 
-            # Check if win/loss notifications are disabled for the channel
-            if channel_data and "valorant.winlossnoti" in channel_data.get("disabled_features", []):
-                continue
+        if career.status_code != 200:
+            continue
 
-            try:
-                # Get Valorant account information for the channel
-                name, discriminator = channel_data["valorant"]["account_user"].split("#")
-                region = channel_data["valorant"]["account_region"]
-            except (KeyError, ValueError):
-                continue
+        career_json = career.json()
 
-            # Retrieve career information for the Valorant account
-            career = await get_career(region=region, name=name, discriminator=discriminator)
+        # Check if the latest match ID has been remembered
+        latest_match_id = career_json["data"][0]["match_id"]
+        latest_remembered_match_id = channel_data.get("valorant", {}).get("latest_match_id")
 
-            if career.status_code != 200:
-                continue
+        print(
+            f"[valorant] {stream.user.name} -> comparing match ids {latest_match_id} - {latest_remembered_match_id}")
+        if latest_match_id == latest_remembered_match_id:
+            continue
 
-            career_json = career.json()
+        # Update the latest remembered match ID
+        channel_data.setdefault("valorant", {})["latest_match_id"] = latest_match_id
+        data.update_data(document_id=channel_id, new_data=channel_data)
 
-            # Check if the latest match ID has been remembered
-            latest_match_id = career_json["data"][0]["match_id"]
-            latest_remembered_match_id = channel_data.get("valorant", {}).get("latest_match_id")
+        # Retrieve detailed information about the latest match
+        match = await get_match(latest_match_id)
+        match_json = match.json()
 
-            print(
-                f"[valorant] {stream.user.name} -> comparing match ids {latest_match_id} - {latest_remembered_match_id}")
-            if latest_match_id == latest_remembered_match_id:
-                continue
+        # Extract relevant match details
+        all_players = match_json["data"]["players"]["all_players"]
+        user_data = next((player for player in all_players if player["name"].lower() == name.lower() and
+                          player["tag"].lower() == discriminator.lower()), None)
 
-            # Update the latest remembered match ID
-            channel_data.setdefault("valorant", {})["latest_match_id"] = latest_match_id
-            data.update_data(document_id=channel_id, new_data=channel_data)
+        if not user_data:
+            continue
 
-            # Retrieve detailed information about the latest match
-            match = await get_match(latest_match_id)
-            match_json = match.json()
+        # Extract match outcome and player statistics
+        red_team_rounds_won, blue_team_rounds_won = (match_json['data']['teams'][team]['rounds_won'] for team in
+                                                     ['red', 'blue'])
+        score = f"{max(red_team_rounds_won, blue_team_rounds_won)}-{min(red_team_rounds_won, blue_team_rounds_won)}"
 
-            # Extract relevant match details
-            all_players = match_json["data"]["players"]["all_players"]
-            user_data = next((player for player in all_players if player["name"].lower() == name.lower() and
-                              player["tag"].lower() == discriminator.lower()), None)
+        map = match_json["data"]["metadata"]["map"]
 
-            if not user_data:
-                continue
+        rr_difference = career_json['data'][0]['mmr_change_to_last_game']
 
-            # Extract match outcome and player statistics
-            red_team_rounds_won, blue_team_rounds_won = (match_json['data']['teams'][team]['rounds_won'] for team in
-                                                         ['red', 'blue'])
-            score = f"{max(red_team_rounds_won, blue_team_rounds_won)}-{min(red_team_rounds_won, blue_team_rounds_won)}"
+        agent = user_data['character']
 
-            map = match_json["data"]["metadata"]["map"]
+        ability_casts = user_data['ability_casts']
+        c_cast, q_cast, e_cast, x_cast = [ability_casts.get(ability, 0) for ability in
+                                          ['c_cast', 'q_cast', 'e_cast', 'x_cast']]
+        c_cast_name, q_cast_name, e_cast_name, x_cast_name = [get_ability(agent, ability) for ability in
+                                                              ['c', 'q', 'e', 'x']]
 
-            rr_difference = career_json['data'][0]['mmr_change_to_last_game']
+        stats = user_data['stats']
+        kills, deaths, assists = stats['kills'], stats['deaths'], stats['assists']
+        headshots, bodyshots, legshots = stats['headshots'], stats['bodyshots'], stats['legshots']
+        headshot_percentage = round((headshots / (headshots + bodyshots + legshots) * 100))
 
-            agent = user_data['character']
+        # Prepare and send the win/loss notification message
+        message_header = f"😭{stream.user.name} lost {abs(rr_difference)}RR on {map} | " if rr_difference <= 0 else \
+            f"PartyHat {stream.user.name} gained {rr_difference}RR on {map} | "
+        message_footer = "😭" if rr_difference <= 0 else "PartyHat"
 
-            ability_casts = user_data['ability_casts']
-            c_cast, q_cast, e_cast, x_cast = [ability_casts.get(ability, 0) for ability in
-                                              ['c_cast', 'q_cast', 'e_cast', 'x_cast']]
-            c_cast_name, q_cast_name, e_cast_name, x_cast_name = [get_ability(agent, ability) for ability in
-                                                                  ['c', 'q', 'e', 'x']]
+        message_body = (
+            f"Score: {score} | KDA: {kills}/{deaths}/{assists} | Agent: {agent} | "
+            f"Abilities: {e_cast_name} {e_cast} times, {q_cast_name} {q_cast} times, "
+            f"{c_cast_name} {c_cast} times, {x_cast_name} {x_cast} times | "
+            f"Headshot: {headshot_percentage}% | "
+            f"Tracker: https://tracker.gg/valorant/match/{latest_match_id} "
+        )
 
-            stats = user_data['stats']
-            kills, deaths, assists = stats['kills'], stats['deaths'], stats['assists']
-            headshots, bodyshots, legshots = stats['headshots'], stats['bodyshots'], stats['legshots']
-            headshot_percentage = round((headshots / (headshots + bodyshots + legshots) * 100))
+        print(
+            f"[valorant] {stream.user.name} -> {abs(rr_difference)}RR on {map} https://tracker.gg/valorant/match/{latest_match_id}")
 
-            # Prepare and send the win/loss notification message
-            message_header = f"😭{stream.user.name} lost {abs(rr_difference)}RR on {map} | " if rr_difference <= 0 else \
-                f"PartyHat {stream.user.name} gained {rr_difference}RR on {map} | "
-            message_footer = "😭" if rr_difference <= 0 else "PartyHat"
-
-            message_body = (
-                f"Score: {score} | KDA: {kills}/{deaths}/{assists} | Agent: {agent} | "
-                f"Abilities: {e_cast_name} {e_cast} times, {q_cast_name} {q_cast} times, "
-                f"{c_cast_name} {c_cast} times, {x_cast_name} {x_cast} times | "
-                f"Headshot: {headshot_percentage}% | "
-                f"Tracker: https://tracker.gg/valorant/match/{latest_match_id} "
-            )
-
-            print(
-                f"[valorant] {stream.user.name} -> {abs(rr_difference)}RR on {map} https://tracker.gg/valorant/match/{latest_match_id}")
-
-            await self.bot.get_channel(stream.user.name).send(message_header + message_body + message_footer)
+        await bot.get_channel(stream.user.name).send(message_header + message_body + message_footer)
 
 
 async def get_rank(channel_name):
