@@ -153,7 +153,8 @@ class CustomCommands(commands.Cog):
 
         if sub_command == "message":
             if len(sub_command_args) < 2:
-                await ctx.reply(f"You did not specify a new message value. (Current message for '{command_name}': {command_data['message']})")
+                await ctx.reply(
+                    f"You did not specify a new message value. (Current message for '{command_name}': {command_data['message']})")
                 return
             new_message = " ".join(map(str, sub_command_args[1:]))
             command_data['message'] = new_message
@@ -161,7 +162,8 @@ class CustomCommands(commands.Cog):
 
         elif sub_command == "userlevel":
             if len(sub_command_args) < 2:
-                await ctx.reply(f"You did not specify a new user level value. (Current user level for '{command_name}': {command_data['user_level']})")
+                await ctx.reply(
+                    f"You did not specify a new user level value. (Current user level for '{command_name}': {command_data['user_level']})")
                 return
             if not sub_command_args[1] or sub_command_args[1].capitalize() not in USER_LEVELS:
                 await ctx.reply(f"Invalid user level. Supported levels: {', '.join(USER_LEVELS)}")
@@ -171,7 +173,8 @@ class CustomCommands(commands.Cog):
 
         elif sub_command == "cooldown":
             if len(sub_command_args) < 2:
-                await ctx.reply(f"You did not specify a new cooldown value. (Current cooldown for '{command_name}': {command_data['cooldown']} seconds)")
+                await ctx.reply(
+                    f"You did not specify a new cooldown value. (Current cooldown for '{command_name}': {command_data['cooldown']} seconds)")
                 return
             if not sub_command_args[1].isdigit():
                 await ctx.reply("You must provide a valid cooldown duration in seconds.")
@@ -181,7 +184,8 @@ class CustomCommands(commands.Cog):
 
         elif sub_command == "aliases":
             if len(sub_command_args) < 2:
-                await ctx.reply(f"You did not specify a new aliases value. (Current aliases for '{command_name}': {', '.join(command_data['aliases'])})")
+                await ctx.reply(
+                    f"You did not specify a new aliases value. (Current aliases for '{command_name}': {', '.join(command_data['aliases'])})")
                 return
             command_data['aliases'] = [alias.strip() for alias in sub_command_args[1].split(',')]
             await ctx.reply(f"Aliases for '{command_name}' updated.")
@@ -228,7 +232,6 @@ class CustomCommands(commands.Cog):
 
         await ctx.reply(f"Command '{command_name}' has been removed.")
 
-
     async def list_commands(self, ctx: commands.Context, args: list, channel_id, channel_data):
         """
         List all custom commands.
@@ -256,7 +259,6 @@ class CustomCommands(commands.Cog):
         commands_info = ", ".join([f"{cmd}" for cmd, data in commands_list.items()])
 
         await ctx.reply(f"Custom Commands: {commands_info}")
-
 
     @commands.command(aliases=["cmd"])
     async def command(self, ctx: commands.Context, *, arg: Optional[str] = None):
@@ -426,7 +428,8 @@ async def replace_placeholders(channel_id, message, command_message, command_dat
 
         # Check if the token bucket allows the urlfetch
         async with token_bucket_lock:
-            tokens, last_refill = urlfetch_token_buckets[channel_id]["tokens"], urlfetch_token_buckets[channel_id]["last_refill"]
+            tokens, last_refill = urlfetch_token_buckets[channel_id]["tokens"], urlfetch_token_buckets[channel_id][
+                "last_refill"]
             current_time = time.time()
 
             if last_refill is None or current_time - last_refill > URLFETCH_TOKEN_REFILL_RATE:
@@ -454,6 +457,7 @@ async def replace_placeholders(channel_id, message, command_message, command_dat
         command_message = command_message.replace(url_placeholder, fetched_content)
 
     return command_message
+
 
 async def handle_urlfetch_response(response, url_params):
     """
@@ -490,6 +494,7 @@ async def handle_urlfetch_response(response, url_params):
 
     return fetched_content
 
+
 def get_line_from_content(content, line_number):
     """
     Get the specified line number from the content.
@@ -507,6 +512,7 @@ def get_line_from_content(content, line_number):
     else:
         return f"Error: Line {line_number} not found in the response."
 
+
 def get_random_line_from_content(content):
     """
     Get a random line from the content.
@@ -523,6 +529,7 @@ def get_random_line_from_content(content):
     else:
         return "Error: No lines found in the response."
 
+
 async def process_json_response(json_data, url_params):
     """
     Process JSON response from a URL fetch.
@@ -535,7 +542,8 @@ async def process_json_response(json_data, url_params):
         str: The processed JSON content.
     """
     # If the parameter "json" is present, use it to extract the specified JSON value
-    json_key = url_params[url_params.index('json') + 1] if 'json' in url_params and len(url_params) > url_params.index('json') + 1 else None
+    json_key = url_params[url_params.index('json') + 1] if 'json' in url_params and len(url_params) > url_params.index(
+        'json') + 1 else None
 
     if json_key:
         # Split the nested keys and traverse the JSON structure
