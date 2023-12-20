@@ -167,5 +167,6 @@ async def handle_firsts_message_event(bot, message):
     print(
         f"[firsts] {message.author.name} was first and now has {user_firsts} firsts in {message.channel.name}'s channel")
 
+
 def prepare(bot: commands.Bot):
     bot.add_cog(Firsts(bot))

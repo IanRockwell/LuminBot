@@ -4,6 +4,7 @@ from typing import Optional
 from data import data
 from bot.utilities import ids
 
+
 class FeatureToggle(commands.Cog):
     """
     A Twitch bot cog for enabling and disabling various features.
@@ -37,7 +38,7 @@ class FeatureToggle(commands.Cog):
 
         # List of available features
         features = [
-            "customcommands", # Entire custom commands feature
+            "customcommands",  # Entire custom commands feature
             "watchstreaks",  # Entire watchstreaks feature
             "firsts",  # Entire firsts feature
             "rank",  # Global rank command

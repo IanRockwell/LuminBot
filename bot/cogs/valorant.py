@@ -49,13 +49,15 @@ class Valorant(commands.Cog):
 
         # Check if the argument is provided
         if arg is None:
-            await ctx.reply("You must specify a valid region and user for this command. (Usage: !valorantset <region> <user>)")
+            await ctx.reply(
+                "You must specify a valid region and user for this command. (Usage: !valorantset <region> <user>)")
             return
 
         # Parse the region and user from the argument
         space_index = arg.find(" ")
         if space_index == -1:
-            await ctx.reply("You must specify a valid region and user for this command. (Usage: !valorantset <region> <user>)")
+            await ctx.reply(
+                "You must specify a valid region and user for this command. (Usage: !valorantset <region> <user>)")
             return
 
         region = arg[:space_index]
@@ -65,7 +67,8 @@ class Valorant(commands.Cog):
 
         # Validate the region
         if region.lower() not in regions:
-            await ctx.reply("You did not specify a valid region (EU, AP, NA, KR, Latam, BR): !valorantset <region> <name>")
+            await ctx.reply(
+                "You did not specify a valid region (EU, AP, NA, KR, Latam, BR): !valorantset <region> <name>")
             return
 
         # Validate the user format
@@ -181,7 +184,8 @@ class Valorant(commands.Cog):
         else:
             difference_tag = "up"
 
-        await ctx.reply(f"{mention}{name} is currently {difference_tag} {difference}RR with {win} wins and {loss} losses in the last 12 hours")
+        await ctx.reply(
+            f"{mention}{name} is currently {difference_tag} {difference}RR with {win} wins and {loss} losses in the last 12 hours")
 
     @commands.command()
     @commands.cooldown(rate=1, per=5, bucket=commands.Bucket.channel)
@@ -216,7 +220,8 @@ class Valorant(commands.Cog):
         except (KeyError, ValueError):
             return
 
-        await ctx.reply(f"{mention}{await get_radiant_rr(region)}RR is the current radiant threshold in {region.upper()}.")
+        await ctx.reply(
+            f"{mention}{await get_radiant_rr(region)}RR is the current radiant threshold in {region.upper()}.")
 
     @routines.routine(seconds=60)
     async def win_loss_notifications(self):
@@ -266,7 +271,8 @@ class Valorant(commands.Cog):
             latest_match_id = career_json["data"][0]["match_id"]
             latest_remembered_match_id = channel_data.get("valorant", {}).get("latest_match_id")
 
-            print(f"[valorant] {stream.user.name} -> comparing match ids {latest_match_id} - {latest_remembered_match_id}")
+            print(
+                f"[valorant] {stream.user.name} -> comparing match ids {latest_match_id} - {latest_remembered_match_id}")
             if latest_match_id == latest_remembered_match_id:
                 continue
 
@@ -321,9 +327,11 @@ class Valorant(commands.Cog):
                 f"Tracker: https://tracker.gg/valorant/match/{latest_match_id} "
             )
 
-            print(f"[valorant] {stream.user.name} -> {abs(rr_difference)}RR on {map} https://tracker.gg/valorant/match/{latest_match_id}")
+            print(
+                f"[valorant] {stream.user.name} -> {abs(rr_difference)}RR on {map} https://tracker.gg/valorant/match/{latest_match_id}")
 
             await self.bot.get_channel(stream.user.name).send(message_header + message_body + message_footer)
+
 
 async def get_rank(channel_name):
     """
@@ -384,6 +392,7 @@ async def get_rank(channel_name):
 
     return result
 
+
 async def get_rr(region: str, name: str, discriminator: str):
     """
     Get Valorant rank information.
@@ -409,6 +418,7 @@ async def get_rr(region: str, name: str, discriminator: str):
         print(f"Error retrieving Valorant rank information: {req_err}")
         return None
 
+
 async def get_match(match_id):
     """
     Get Valorant match information.
@@ -431,6 +441,7 @@ async def get_match(match_id):
     except requests.exceptions.RequestException as req_err:
         print(f"Error retrieving Valorant match information: {req_err}")
         return None
+
 
 async def get_career(region: str, name: str, discriminator: str):
     """
@@ -456,6 +467,7 @@ async def get_career(region: str, name: str, discriminator: str):
     except requests.exceptions.RequestException as req_err:
         print(f"Error retrieving Valorant career information: {req_err}")
         return None
+
 
 async def get_leaderboard(region: str):
     """
@@ -496,6 +508,7 @@ async def get_radiant_rr(region: str):
     json = leaderboard_request.json()
     ranked_rating_500 = next(item["rankedRating"] for item in json if item["leaderboardRank"] == 500)
     return max(ranked_rating_500, 450)
+
 
 def get_ability(agent, keybind):
     """
