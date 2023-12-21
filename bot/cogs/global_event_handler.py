@@ -60,13 +60,27 @@ class GlobalEventHandler(commands.Cog):
         # Fetch live streams for connected channels
         streams = await self.bot.fetch_streams(user_logins=user_logins, type="live")
 
+        # Convert Stream objects to a serializable format
+        serializable_streams = [
+            {
+                "id": stream.id,
+                "user": {
+                    "id": stream.user.id,
+                    "name": stream.user.name
+                },
+                "title": stream.title,
+                "started_at": stream.started_at.isoformat(),
+                "viewer_count": stream.viewer_count
+            }
+            for stream in streams
+        ]
+
         # Trigger Valorant win/loss notifications
         await valorant.win_loss_notifications(self.bot, streams)
 
-        # Updating the logged stream data, this is used for external programs
-        # to get general information about who is streaming on the bot.
+        # Updating the logged stream data
         streams_data = data.get_data("streams")
-        streams_data["streams"] = streams
+        streams_data["streams"] = serializable_streams
         data.update_data("streams", streams_data)
 
 
