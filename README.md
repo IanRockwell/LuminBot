@@ -62,6 +62,10 @@ TWITCH_CLIENTSECRET=
 PP_ADDICT_APIKEY=
 OSU_V1_APIKEY=
 
+# HenrikDev (valorant) Authorization
+# Can be left blank, and will still allow 30 requests per minute.
+HENRIK_DEV_APIKEY=
+
 # Do you want people to be able to add your bot to their channel with !register
 BOT_PUBLIC=true
 ```

@@ -1,12 +1,23 @@
 from datetime import datetime
 from typing import Optional
+from dotenv import load_dotenv
 
 import requests
+import os
 from twitchio.ext import commands
-from twitchio.ext import routines
 
 from bot.utilities import ids, add_mention
 from data import data
+
+load_dotenv()
+
+HENRIK_DEV_APIKEY = os.getenv("HENRIK_DEV_APIKEY")
+
+# Some basic handling for if no API key is given.
+if HENRIK_DEV_APIKEY != "":
+    HEADERS = {"Authorization": HENRIK_DEV_APIKEY}
+else:
+    HEADERS = {}
 
 
 class Valorant(commands.Cog):
@@ -351,7 +362,6 @@ async def get_rank(channel_name):
         return None
 
     rank_data_request = await get_rr(region=region, name=name, discriminator=discriminator)
-    print(rank_data_request.text)
 
     if rank_data_request.status_code != 200:
         return f"Error: Status code: {rank_data_request.status_code}, Response: {rank_data_request.text}"
@@ -398,7 +408,7 @@ async def get_rr(region: str, name: str, discriminator: str):
     url = f"https://api.henrikdev.xyz/valorant/v1/mmr/{region}/{name}/{discriminator}?show=combo&display=0"
 
     try:
-        response = requests.get(url)
+        response = requests.get(url, headers=HEADERS)
         response.raise_for_status()
         return response
     except requests.exceptions.HTTPError as http_err:
@@ -422,7 +432,7 @@ async def get_match(match_id):
     url = f"https://api.henrikdev.xyz/valorant/v2/match/{match_id}"
 
     try:
-        response = requests.get(url)
+        response = requests.get(url, headers=HEADERS)
         response.raise_for_status()
         return response
     except requests.exceptions.HTTPError as http_err:
@@ -448,7 +458,7 @@ async def get_career(region: str, name: str, discriminator: str):
     url = f"https://api.henrikdev.xyz/valorant/v1/mmr-history/{region}/{name}/{discriminator}"
 
     try:
-        response = requests.get(url)
+        response = requests.get(url, headers=HEADERS)
         response.raise_for_status()
         return response
     except requests.exceptions.HTTPError as http_err:
@@ -472,7 +482,7 @@ async def get_leaderboard(region: str):
     url = f"https://api.henrikdev.xyz/valorant/v1/leaderboard/{region}"
 
     try:
-        response = requests.get(url)
+        response = requests.get(url, headers=HEADERS)
         response.raise_for_status()
         return response
     except requests.exceptions.HTTPError as http_err:
