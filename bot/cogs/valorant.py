@@ -121,7 +121,7 @@ class Valorant(commands.Cog):
     @commands.cooldown(rate=1, per=5, bucket=commands.Bucket.channel)
     async def record(self, ctx: commands.Context, *, arg: Optional[str] = None):
         """
-        Command for viewing the streamer"s win/loss this stream.
+        Command for viewing the streamer's win/loss this stream.
 
         Parameters:
             ctx (commands.Context): The command context.
@@ -332,7 +332,7 @@ async def get_rank(channel_name):
 
     This function is used in the global_rank cog's !rank command to fetch and present
     the Valorant rank of a streamer. It extracts account details (name, discriminator,
-    region) from stored data, queries the Kyroskoh API for rank information,
+    region) from stored data, queries the HenrikDev API for rank information,
     and formats the result. Special handling for Immortal and Radiant ranks includes
     additional details like RR from Radiant for Immortal ranks. If there's an API error,
     it returns an error message with the HTTP status code and response text.
@@ -351,17 +351,19 @@ async def get_rank(channel_name):
         return None
 
     rank_data_request = await get_rr(region=region, name=name, discriminator=discriminator)
+    print(rank_data_request.text)
 
     if rank_data_request.status_code != 200:
         return f"Error: Status code: {rank_data_request.status_code}, Response: {rank_data_request.text}"
 
-    rank_split = rank_data_request.text.split()
+    rank_json = rank_data_request.json()
 
-    rank = rank_split[0]
+    current_tier_patched = rank_json["data"]["currenttierpatched"]
+    rank = current_tier_patched.split()[0]
 
     if rank == "Immortal":
-        tier = int(rank_split[1])
-        rr = int(rank_split[3][:-3])
+        tier = int(current_tier_patched.split()[1])
+        rr = rank_json["data"]["ranking_in_tier"]
         radiant_rr = await get_radiant_rr(region=region)
 
         rr_from_radiant = radiant_rr - rr
@@ -369,12 +371,12 @@ async def get_rank(channel_name):
         result = f"{rank} {tier} - {rr}RR ({rr_from_radiant}RR from Radiant)"
 
     elif rank == "Radiant":
-        rr = int(rank_split[2][:-3])
+        rr = rank_json["data"]["ranking_in_tier"]
         result = f"{rank} - {rr}RR"
 
     else:
-        tier = int(rank_split[1])
-        rr = int(rank_split[3][:-3])
+        tier = int(current_tier_patched.split()[1])
+        rr = rank_json["data"]["ranking_in_tier"]
         result = f"{rank} {tier} - {rr}RR"
 
     return result
@@ -393,7 +395,7 @@ async def get_rr(region: str, name: str, discriminator: str):
         Response: The HTTP response containing rank information.
     """
 
-    url = f"https://api.kyroskoh.xyz/valorant/v1/mmr/{region}/{name}/{discriminator}?show=combo&display=0"
+    url = f"https://api.henrikdev.xyz/valorant/v1/mmr/{region}/{name}/{discriminator}?show=combo&display=0"
 
     try:
         response = requests.get(url)
