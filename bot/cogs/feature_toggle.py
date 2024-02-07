@@ -49,7 +49,8 @@ class FeatureToggle(commands.Cog):
 
             "valorant.radiant",  # valorant related
             "valorant.record",  # valorant related
-            "valorant.winlossnoti"  # valorant related
+            "valorant.winlossnoti",  # valorant related
+            "valorant.lastgame",  # valorant related
         ]
 
         # Split the argument into components

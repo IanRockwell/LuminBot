@@ -76,7 +76,7 @@ class GlobalEventHandler(commands.Cog):
         ]
 
         # Trigger Valorant win/loss notifications
-        await valorant.win_loss_notifications(self.bot, streams)
+        await valorant.win_loss_notifications(self.bot, streams, False)
 
         # Updating the logged stream data
         streams_data = data.get_data("streams")

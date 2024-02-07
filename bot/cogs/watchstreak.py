@@ -183,7 +183,7 @@ async def handle_watchstreaks_message_event(bot, message):
                 del document[f"streamer_{channel_id}_watchstreaks"]["watchstreak"]
                 data.update_data(document_id, document)
 
-    if message.author.name in known_bots.KNOWN_BOTS + message.channel.name:
+    if message.author.name in known_bots.KNOWN_BOTS:
         return
 
     user_data = data.get_data(user_id)

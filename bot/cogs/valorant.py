@@ -231,8 +231,49 @@ class Valorant(commands.Cog):
         await ctx.reply(
             f"{mention}{await get_radiant_rr(region)}RR is the current radiant threshold in {region.upper()}.")
 
+    @commands.command()
+    @commands.cooldown(rate=1, per=60, bucket=commands.Bucket.channel)
+    async def lastgame(self, ctx: commands.Context, *, arg: Optional[str] = None):
+        """
+        Command for viewing the streamer's last game played.
 
-async def win_loss_notifications(bot, streams):
+        Parameters:
+            ctx (commands.Context): The command context.
+            arg (Optional[str]): The mentioned user.
+
+        Usage:
+            !lastgame
+        """
+
+        channel_id = ids.get_id_from_name(ctx.channel.name)
+        channel_data = data.get_data(channel_id)
+
+        try:
+            if "valorant.record" in channel_data["disabled_features"]:
+                return
+        except (KeyError, ValueError):
+            pass
+
+        if not channel_data:
+            return
+
+        try:
+            if "valorant.lastgame" in channel_data["disabled_features"]:
+                return
+        except (KeyError, ValueError):
+            pass
+
+        try:
+            name, discriminator = channel_data["valorant"]["account_user"].split("#")
+            region = channel_data["valorant"]["account_region"]
+        except (KeyError, ValueError):
+            return
+
+        streams = await self.bot.fetch_streams(user_logins=[f"{ctx.channel.name}"], type="live")
+        await win_loss_notifications(self.bot, streams, True)
+
+
+async def win_loss_notifications(bot, streams, command):
     """
     Function for checking win/loss notifications in connected channels.
     """
@@ -246,9 +287,10 @@ async def win_loss_notifications(bot, streams):
         channel_id = ids.get_id_from_name(stream.user.name)
         channel_data = data.get_data(channel_id)
 
-        # Check if win/loss notifications are disabled for the channel
-        if channel_data and "valorant.winlossnoti" in channel_data.get("disabled_features", []):
-            continue
+        if command is False:
+            # Check if win/loss notifications are disabled for the channel
+            if channel_data and "valorant.winlossnoti" in channel_data.get("disabled_features", []):
+                continue
 
         try:
             # Get Valorant account information for the channel
@@ -271,8 +313,11 @@ async def win_loss_notifications(bot, streams):
 
         print(
             f"[valorant] {stream.user.name} -> comparing match ids {latest_match_id} - {latest_remembered_match_id}")
-        if latest_match_id == latest_remembered_match_id:
-            continue
+
+        # If the function is called in a command, ignore if the latest match ID is set or not.
+        if command is False:
+            if latest_match_id == latest_remembered_match_id:
+                continue
 
         # Update the latest remembered match ID
         channel_data.setdefault("valorant", {})["latest_match_id"] = latest_match_id
@@ -327,6 +372,8 @@ async def win_loss_notifications(bot, streams):
 
         print(
             f"[valorant] {stream.user.name} -> {abs(rr_difference)}RR on {map} https://tracker.gg/valorant/match/{latest_match_id}")
+
+        message_header = f"Last Game Played: {message_header}"
 
         await bot.get_channel(stream.user.name).send(message_header + message_body + message_footer)
 

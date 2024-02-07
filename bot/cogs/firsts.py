@@ -133,7 +133,7 @@ async def handle_firsts_message_event(bot, message):
         return
 
     # If the user is in the known bots list, return
-    if message.author.name in known_bots.KNOWN_BOTS + message.channel.name:
+    if message.author.name in known_bots.KNOWN_BOTS:
         return
 
     stream = await bot.fetch_streams(user_logins=[message.channel.name], type="live")
