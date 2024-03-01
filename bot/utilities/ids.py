@@ -8,6 +8,7 @@ load_dotenv()
 TWITCH_CLIENTID = os.getenv("TWITCH_CLIENTID")
 TWITCH_TOKEN = os.getenv("TWITCH_TOKEN")
 
+
 def get_name_from_id(user_id):
     """
     Get the Twitch broadcaster name associated with the provided user ID.
@@ -41,7 +42,7 @@ def get_id_from_name(name):
     - name (str): The broadcaster name on Twitch.
 
     Returns:
-    - str: The user ID.
+    - str or int: The user ID if found, otherwise -1.
     """
     headers = {
         'Client-Id': str(TWITCH_CLIENTID),
@@ -51,6 +52,9 @@ def get_id_from_name(name):
     url = f'https://api.twitch.tv/helix/users?login={name}'
 
     response = requests.get(url, headers=headers)
+
+    if response.status_code != 200:
+        return -1
 
     json_response = json.loads(response.text)
     broadcaster_id = json_response['data'][0]['id']
