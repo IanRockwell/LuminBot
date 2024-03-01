@@ -308,6 +308,9 @@ async def handle_command_message_event(bot, message):
     """
     Event handler for processing command messages.
 
+    This event is called inside the global_event_handler
+    in order to prevent very annoying race conditions.
+
     Parameters:
         bot: The Twitch bot instance.
         message: The Twitch message.

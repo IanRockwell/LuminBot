@@ -147,6 +147,9 @@ async def handle_firsts_message_event(bot, message):
     """
     Event handler for processing firsts and updating data.
 
+    This event is called inside the global_event_handler
+    in order to prevent very annoying race conditions.
+
     Parameters:
         bot: The Twitch bot instance.
         message: The incoming message.
