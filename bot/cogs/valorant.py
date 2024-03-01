@@ -249,7 +249,7 @@ class Valorant(commands.Cog):
         channel_data = data.get_data(channel_id)
 
         try:
-            if "valorant.record" in channel_data["disabled_features"]:
+            if "valorant.lastgame" in channel_data["disabled_features"]:
                 return
         except (KeyError, ValueError):
             pass
