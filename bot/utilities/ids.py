@@ -44,6 +44,9 @@ def get_id_from_name(name):
     Returns:
     - str or int: The user ID if found, otherwise -1.
     """
+    if not name:
+        return -1
+
     headers = {
         'Client-Id': str(TWITCH_CLIENTID),
         'Authorization': str(f'Bearer {TWITCH_TOKEN}')
@@ -53,10 +56,10 @@ def get_id_from_name(name):
 
     response = requests.get(url, headers=headers)
 
-    if response.status_code != 200:
-        return -1
-
     json_response = json.loads(response.text)
-    broadcaster_id = json_response['data'][0]['id']
 
-    return broadcaster_id
+    if 'data' in json_response and json_response['data']:
+        broadcaster_id = json_response['data'][0]['id']
+        return broadcaster_id
+    else:
+        return -1
