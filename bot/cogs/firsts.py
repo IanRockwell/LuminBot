@@ -48,11 +48,49 @@ class Firsts(commands.Cog):
             await self.handle_basic_firsts(ctx, channel_id, channel_data)
             return
 
-        arg = arg.replace(" 󠀀", "")
+        arg = arg.replace(" 󠀀", "")  # Remove invisible characters from the argument
+        args = arg.split(" ")
 
-        if arg == "top":
+        if args[0] == "top":
             await self.handle_top_firsts(ctx, channel_id)
             return
+
+        if args[0] == "set":
+
+            # Check if the command issuer is a moderator or broadcaster
+            if not ctx.author.is_mod and not ctx.author.is_broadcaster:
+                return
+
+            if len(args) < 3:
+                await ctx.reply("Invalid usage. Correct usage: !first set <user> <count>")
+                return
+
+            username = args[1]
+            firsts_value = args[2]
+
+            # Convert username to user ID
+            user_id = ids.get_id_from_name(username)
+            if user_id == -1:
+                await ctx.reply("The user you specified is not a valid Twitch user.")
+                return
+
+            try:
+                firsts_count = int(firsts_value)
+            except ValueError:
+                await ctx.reply("The firsts count you specified is not a valid integer.")
+                return
+
+            # Update the firsts count for the specified user
+            user_data = data.get_data(user_id)
+            channel_id = ids.get_id_from_name(ctx.channel.name)
+
+            user_data.setdefault(f"streamer_{channel_id}_firsts", {})
+            user_data[f"streamer_{channel_id}_firsts"]["firsts"] = firsts_count
+
+            # Update the data
+            data.update_data(user_id, user_data)
+
+            await ctx.reply(f"Firsts count for {username} set to {firsts_count}.")
 
     async def handle_basic_firsts(self, ctx: commands.Context, channel_id: str, channel_data: dict):
         """
