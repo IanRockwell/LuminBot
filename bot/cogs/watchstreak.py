@@ -20,7 +20,7 @@ class Watchstreak(commands.Cog):
         self.bot = bot
 
     @commands.command(aliases=["watchstreaks", "ws"])
-    #@commands.cooldown(rate=1, per=5, bucket=commands.Bucket.channel)
+    @commands.cooldown(rate=1, per=5, bucket=commands.Bucket.channel)
     async def watchstreak(self, ctx: commands.Context, *, arg: Optional[str] = None):
         """
         Command for viewing all watchstreak related data
