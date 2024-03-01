@@ -87,7 +87,6 @@ class LuminBot(commands.Bot):
 
         print(f" + Channels: {formatted_channel_names}")
 
-    '''
     async def event_command_error(self, ctx, error):
         """
         Event handler for command errors.
@@ -104,4 +103,3 @@ class LuminBot(commands.Bot):
         else:
             # Print other errors
             print(f"Ignoring exception in command: {error}")
-    '''
