@@ -20,7 +20,7 @@ class Watchstreak(commands.Cog):
         self.bot = bot
 
     @commands.command(aliases=["watchstreaks", "ws"])
-    @commands.cooldown(rate=1, per=5, bucket=commands.Bucket.channel)
+    #@commands.cooldown(rate=1, per=5, bucket=commands.Bucket.channel)
     async def watchstreak(self, ctx: commands.Context, *, arg: Optional[str] = None):
         """
         Command for viewing all watchstreak related data
@@ -46,21 +46,74 @@ class Watchstreak(commands.Cog):
             pass
 
         if arg is None:
-            # Display user's watchstreak information
             await self.handle_basic_watchstreak(ctx, channel_id)
             return
 
         arg = arg.replace(" 󠀀", "")  # Remove invisible characters from the argument
+        args = arg.split(" ")
 
-        if arg == "top":
-            # Display the top 10 watchstreaks in the channel
+        if args[0] == "top":
             await self.handle_top_watchstreaks(ctx, channel_id)
             return
 
-        if arg == "recordtop":
-            # Display the top 10 all-time watchstreaks in the channel
+        if args[0] == "recordtop":
             await self.handle_recordtop_watchstreaks(ctx, channel_id)
             return
+
+        if args[0] == "set":
+
+            # Check if the command issuer is a moderator or broadcaster
+            if not ctx.author.is_mod and not ctx.author.is_broadcaster:
+                return
+
+            if len(args) < 3:
+                await ctx.reply("Invalid usage. Correct usage: !watchstreak set <user> <streak> [-resetrecord]")
+                return
+
+            username = args[1]
+            streak_value = args[2]
+
+            # Convert username to user ID
+            user_id = ids.get_id_from_name(username)
+            if user_id == -1:
+                await ctx.reply("The user you specified is not a valid Twitch user.")
+                return
+
+            try:
+                streak = int(streak_value)
+            except ValueError:
+                await ctx.reply("The watchstreak value you specified is not a valid integer.")
+                return
+
+            # Update the watchstreak data for the specified user
+            user_data = data.get_data(user_id)
+
+            try:
+                user_watchstreak_data = user_data[f"streamer_{channel_id}_watchstreaks"]
+            except (KeyError, ValueError):
+                user_watchstreak_data = {
+                    "latest_stream": None,
+                    "watchstreak": 0,
+                    "watchstreak_record": 0,
+                }
+
+            previous_record = user_watchstreak_data.get("watchstreak_record", 0)
+
+            user_watchstreak_data["watchstreak"] = streak
+
+            # Update the record watchstreak if the new streak is higher
+            if streak > previous_record:
+                user_watchstreak_data["watchstreak_record"] = streak
+            elif len(args) > 3 and args[3] == "-resetrecord":
+                user_watchstreak_data["watchstreak_record"] = streak
+
+            user_data[f"streamer_{channel_id}_watchstreaks"] = user_watchstreak_data
+
+            # Update the data
+            data.update_data(user_id, user_data)
+
+            await ctx.reply(f"Watchstreak for {username} set to {streak}.")
+
 
     async def handle_basic_watchstreak(self, ctx: commands.Context, channel_id: str):
         """
@@ -132,6 +185,9 @@ class Watchstreak(commands.Cog):
 async def handle_watchstreaks_message_event(bot, message):
     """
     Event handler for processing messages and updating watchstreaks.
+
+    This event is called inside the global_event_handler
+    in order to prevent very annoying race conditions.
 
     Parameters:
         bot: The Twitch bot instance.
