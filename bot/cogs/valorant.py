@@ -165,7 +165,7 @@ class Valorant(commands.Cog):
         career_request = await get_career(region=region, name=name, discriminator=discriminator)
 
         if career_request.status_code != 200:
-            await ctx.reply(f"Error: Status code: {career_request.status_code}, Response: {career_request.text}")
+            await ctx.reply(f"Server Error: Status code: {career_request.status_code}")
             return
 
         career = career_request.json()
@@ -411,7 +411,7 @@ async def get_rank(channel_name):
     rank_data_request = await get_rr(region=region, name=name, discriminator=discriminator)
 
     if rank_data_request.status_code != 200:
-        return f"Error: Status code: {rank_data_request.status_code}, Response: {rank_data_request.text}"
+        return f"Server Error: Status code: {rank_data_request.status_code}"
 
     rank_json = rank_data_request.json()
 
